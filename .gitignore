@@ -1,0 +1,21 @@
+.build/
+.swiftpm/
+.cache/
+dist/
+.DS_Store
+*.unableton/
+*.wav
+*.mid
+*.sf2
+
+__pycache__/
+
+# Credentials and local signing material never belong in the repository.
+.env
+.env.*
+!.env.example
+credentials.json
+*.pem
+*.key
+*.p8
+*.p12

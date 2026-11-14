@@ -1,0 +1,1213 @@
+{
+  "auditedOn": "2026-11-14",
+  "platform": {
+    "macOS": "26.5.1",
+    "architecture": "arm64"
+  },
+  "method": "Pinned archive + SF2 SHA-256, parsed preset/sample key zones, Fresh AVAudioUnitSampler graph and production-style pre-render MIDI scheduling for each low/middle/high supported key at velocity 100; all legacy Muldjord mapped native keys tested. Numerical non-silence, not a listening judgment.",
+  "banks": 42,
+  "downloadBytes": 808090683,
+  "installedBytes": 2213455928,
+  "presets": [
+    {
+      "bankID": "mallets",
+      "program": 0,
+      "bank": 0,
+      "minimumPitch": 46,
+      "maximumPitch": 99,
+      "nativeRender": [
+        {
+          "peak": 0.37623536586761475,
+          "pitch": 46
+        },
+        {
+          "peak": 0.3653979003429413,
+          "pitch": 73
+        },
+        {
+          "peak": 0.3730453550815582,
+          "pitch": 99
+        }
+      ],
+      "fullyValidated": true
+    },
+    {
+      "bankID": "freepats.pickedbassyr",
+      "program": 0,
+      "bank": 0,
+      "minimumPitch": 26,
+      "maximumPitch": 46,
+      "nativeRender": [
+        {
+          "peak": 0.26754236221313477,
+          "pitch": 26
+        },
+        {
+          "peak": 0.26755380630493164,
+          "pitch": 36
+        },
+        {
+          "peak": 0.26701077818870544,
+          "pitch": 46
+        }
+      ],
+      "fullyValidated": true
+    },
+    {
+      "bankID": "bass",
+      "program": 0,
+      "bank": 0,
+      "minimumPitch": 26,
+      "maximumPitch": 45,
+      "nativeRender": [
+        {
+          "peak": 0.26758116483688354,
+          "pitch": 26
+        },
+        {
+          "peak": 0.2675502896308899,
+          "pitch": 36
+        },
+        {
+          "peak": 0.26756981015205383,
+          "pitch": 45
+        }
+      ],
+      "fullyValidated": true
+    },
+    {
+      "bankID": "freepats.fm-piano1",
+      "program": 0,
+      "bank": 0,
+      "minimumPitch": 27,
+      "maximumPitch": 98,
+      "nativeRender": [
+        {
+          "peak": 0.26604652404785156,
+          "pitch": 27
+        },
+        {
+          "peak": 0.2652910649776459,
+          "pitch": 63
+        },
+        {
+          "peak": 0.25288042426109314,
+          "pitch": 98
+        }
+      ],
+      "fullyValidated": true
+    },
+    {
+      "bankID": "freepats.fm-piano1",
+      "program": 1,
+      "bank": 0,
+      "minimumPitch": 27,
+      "maximumPitch": 98,
+      "nativeRender": [
+        {
+          "peak": 0.26635193824768066,
+          "pitch": 27
+        },
+        {
+          "peak": 0.26598766446113586,
+          "pitch": 63
+        },
+        {
+          "peak": 0.2631685733795166,
+          "pitch": 98
+        }
+      ],
+      "fullyValidated": true
+    },
+    {
+      "bankID": "freepats.fm-piano1",
+      "program": 2,
+      "bank": 0,
+      "minimumPitch": 27,
+      "maximumPitch": 98,
+      "nativeRender": [
+        {
+          "peak": 0.26604652404785156,
+          "pitch": 27
+        },
+        {
+          "peak": 0.2652910649776459,
+          "pitch": 63
+        },
+        {
+          "peak": 0.25288042426109314,
+          "pitch": 98
+        }
+      ],
+      "fullyValidated": true
+    },
+    {
+      "bankID": "freepats.fm-piano1",
+      "program": 3,
+      "bank": 0,
+      "minimumPitch": 27,
+      "maximumPitch": 98,
+      "nativeRender": [
+        {
+          "peak": 0.2659051716327667,
+          "pitch": 27
+        },
+        {
+          "peak": 0.26520484685897827,
+          "pitch": 63
+        },
+        {
+          "peak": 0.25448107719421387,
+          "pitch": 98
+        }
+      ],
+      "fullyValidated": true
+    },
+    {
+      "bankID": "freepats.fm-piano2",
+      "program": 0,
+      "bank": 0,
+      "minimumPitch": 26,
+      "maximumPitch": 103,
+      "nativeRender": [
+        {
+          "peak": 0.2660059630870819,
+          "pitch": 26
+        },
+        {
+          "peak": 0.26126375794410706,
+          "pitch": 65
+        },
+        {
+          "peak": 0.2650299072265625,
+          "pitch": 103
+        }
+      ],
+      "fullyValidated": true
+    },
+    {
+      "bankID": "freepats.jawharp",
+      "program": 0,
+      "bank": 0,
+      "minimumPitch": 36,
+      "maximumPitch": 83,
+      "nativeRender": [
+        {
+          "peak": 0.11944235116243362,
+          "pitch": 36
+        },
+        {
+          "peak": 0.2533808946609497,
+          "pitch": 60
+        },
+        {
+          "peak": 0.03374853730201721,
+          "pitch": 83
+        }
+      ],
+      "fullyValidated": true
+    },
+    {
+      "bankID": "guitar",
+      "program": 0,
+      "bank": 0,
+      "minimumPitch": 29,
+      "maximumPitch": 88,
+      "nativeRender": [
+        {
+          "peak": 0.264470636844635,
+          "pitch": 29
+        },
+        {
+          "peak": 0.26434630155563354,
+          "pitch": 59
+        },
+        {
+          "peak": 0.2569824457168579,
+          "pitch": 88
+        }
+      ],
+      "fullyValidated": true
+    },
+    {
+      "bankID": "freepats.ukulele",
+      "program": 0,
+      "bank": 0,
+      "minimumPitch": 47,
+      "maximumPitch": 86,
+      "nativeRender": [
+        {
+          "peak": 0.1894504576921463,
+          "pitch": 47
+        },
+        {
+          "peak": 0.16803918778896332,
+          "pitch": 71
+        },
+        {
+          "peak": 0.1282624453306198,
+          "pitch": 86
+        }
+      ],
+      "fullyValidated": true
+    },
+    {
+      "bankID": "freepats.drawbarorganemulation",
+      "program": 0,
+      "bank": 0,
+      "minimumPitch": 33,
+      "maximumPitch": 98,
+      "nativeRender": [
+        {
+          "peak": 0.1674848198890686,
+          "pitch": 33
+        },
+        {
+          "peak": 0.24849297106266022,
+          "pitch": 66
+        },
+        {
+          "peak": 0.26385778188705444,
+          "pitch": 98
+        }
+      ],
+      "fullyValidated": true
+    },
+    {
+      "bankID": "freepats.percussiveorganemulation",
+      "program": 0,
+      "bank": 0,
+      "minimumPitch": 31,
+      "maximumPitch": 108,
+      "nativeRender": [
+        {
+          "peak": 0.3370029628276825,
+          "pitch": 31
+        },
+        {
+          "peak": 0.33709579706192017,
+          "pitch": 70
+        },
+        {
+          "peak": 0.3190644085407257,
+          "pitch": 108
+        }
+      ],
+      "fullyValidated": true
+    },
+    {
+      "bankID": "freepats.rockorganemulation",
+      "program": 0,
+      "bank": 0,
+      "minimumPitch": 31,
+      "maximumPitch": 108,
+      "nativeRender": [
+        {
+          "peak": 0.321478933095932,
+          "pitch": 31
+        },
+        {
+          "peak": 0.357356995344162,
+          "pitch": 70
+        },
+        {
+          "peak": 0.35213109850883484,
+          "pitch": 108
+        }
+      ],
+      "fullyValidated": true
+    },
+    {
+      "bankID": "freepats.churchorganemulation",
+      "program": 0,
+      "bank": 0,
+      "minimumPitch": 33,
+      "maximumPitch": 100,
+      "nativeRender": [
+        {
+          "peak": 0.3454289436340332,
+          "pitch": 33
+        },
+        {
+          "peak": 0.3046685755252838,
+          "pitch": 67
+        },
+        {
+          "peak": 0.30880439281463623,
+          "pitch": 100
+        }
+      ],
+      "fullyValidated": true
+    },
+    {
+      "bankID": "drums",
+      "program": 0,
+      "bank": 0,
+      "minimumPitch": 48,
+      "maximumPitch": 66,
+      "nativeRender": [
+        {
+          "peak": 0.27231964468955994,
+          "pitch": 48
+        },
+        {
+          "peak": 0.33920857310295105,
+          "pitch": 50
+        },
+        {
+          "peak": 0.33920860290527344,
+          "pitch": 51
+        },
+        {
+          "peak": 0,
+          "pitch": 52
+        },
+        {
+          "peak": 0,
+          "pitch": 53
+        },
+        {
+          "peak": 0,
+          "pitch": 54
+        },
+        {
+          "peak": 0,
+          "pitch": 55
+        },
+        {
+          "peak": 0,
+          "pitch": 58
+        },
+        {
+          "peak": 0,
+          "pitch": 60
+        },
+        {
+          "peak": 0,
+          "pitch": 61
+        },
+        {
+          "peak": 0,
+          "pitch": 62
+        },
+        {
+          "peak": 0,
+          "pitch": 63
+        },
+        {
+          "peak": 0,
+          "pitch": 64
+        }
+      ],
+      "fullyValidated": false
+    },
+    {
+      "bankID": "freepats.synthesizerpercussion",
+      "program": 0,
+      "bank": 0,
+      "minimumPitch": 48,
+      "maximumPitch": 66,
+      "nativeRender": [
+        {
+          "peak": 0.267574280500412,
+          "pitch": 48
+        },
+        {
+          "peak": 0.2675824463367462,
+          "pitch": 57
+        },
+        {
+          "peak": 0.2614915072917938,
+          "pitch": 66
+        }
+      ],
+      "fullyValidated": true
+    },
+    {
+      "bankID": "piano",
+      "program": 0,
+      "bank": 0,
+      "minimumPitch": 21,
+      "maximumPitch": 108,
+      "nativeRender": [
+        {
+          "peak": 0.3782813251018524,
+          "pitch": 21
+        },
+        {
+          "peak": 0.37781599164009094,
+          "pitch": 65
+        },
+        {
+          "peak": 0.3782922327518463,
+          "pitch": 108
+        }
+      ],
+      "fullyValidated": true
+    },
+    {
+      "bankID": "freepats.ydp-grandpiano",
+      "program": 0,
+      "bank": 0,
+      "minimumPitch": 20,
+      "maximumPitch": 109,
+      "nativeRender": [
+        {
+          "peak": 0.359302282333374,
+          "pitch": 20
+        },
+        {
+          "peak": 0.2856721878051758,
+          "pitch": 65
+        },
+        {
+          "peak": 0.3535318970680237,
+          "pitch": 109
+        }
+      ],
+      "fullyValidated": true
+    },
+    {
+      "bankID": "freepats.salamandergrandpiano",
+      "program": 0,
+      "bank": 0,
+      "minimumPitch": 21,
+      "maximumPitch": 108,
+      "nativeRender": [
+        {
+          "peak": 0.2220587283372879,
+          "pitch": 21
+        },
+        {
+          "peak": 0.18153883516788483,
+          "pitch": 65
+        },
+        {
+          "peak": 0.13200734555721283,
+          "pitch": 108
+        }
+      ],
+      "fullyValidated": true
+    },
+    {
+      "bankID": "freepats.pianofb",
+      "program": 0,
+      "bank": 0,
+      "minimumPitch": 19,
+      "maximumPitch": 108,
+      "nativeRender": [
+        {
+          "peak": 0.37798431515693665,
+          "pitch": 19
+        },
+        {
+          "peak": 0.3782729506492615,
+          "pitch": 64
+        },
+        {
+          "peak": 0.3683648705482483,
+          "pitch": 108
+        }
+      ],
+      "fullyValidated": true
+    },
+    {
+      "bankID": "freepats.clarinet",
+      "program": 0,
+      "bank": 0,
+      "minimumPitch": 45,
+      "maximumPitch": 91,
+      "nativeRender": [
+        {
+          "peak": 0.25974175333976746,
+          "pitch": 45
+        },
+        {
+          "peak": 0.266058087348938,
+          "pitch": 68
+        },
+        {
+          "peak": 0.26348739862442017,
+          "pitch": 91
+        }
+      ],
+      "fullyValidated": true
+    },
+    {
+      "bankID": "freepats.tenorsaxophone",
+      "program": 0,
+      "bank": 0,
+      "minimumPitch": 43,
+      "maximumPitch": 89,
+      "nativeRender": [
+        {
+          "peak": 0.2665169835090637,
+          "pitch": 43
+        },
+        {
+          "peak": 0.261292964220047,
+          "pitch": 66
+        },
+        {
+          "peak": 0.2639749050140381,
+          "pitch": 89
+        }
+      ],
+      "fullyValidated": true
+    },
+    {
+      "bankID": "freepats.latelybass",
+      "program": 0,
+      "bank": 0,
+      "minimumPitch": 21,
+      "maximumPitch": 103,
+      "nativeRender": [
+        {
+          "peak": 0.2643324136734009,
+          "pitch": 21
+        },
+        {
+          "peak": 0.24938221275806427,
+          "pitch": 62
+        },
+        {
+          "peak": 0.19737891852855682,
+          "pitch": 103
+        }
+      ],
+      "fullyValidated": true
+    },
+    {
+      "bankID": "freepats.synthbass1",
+      "program": 0,
+      "bank": 0,
+      "minimumPitch": 24,
+      "maximumPitch": 88,
+      "nativeRender": [
+        {
+          "peak": 0.24165485799312592,
+          "pitch": 24
+        },
+        {
+          "peak": 0.2663923501968384,
+          "pitch": 56
+        },
+        {
+          "peak": 0.25778093934059143,
+          "pitch": 88
+        }
+      ],
+      "fullyValidated": true
+    },
+    {
+      "bankID": "freepats.synthbass2",
+      "program": 0,
+      "bank": 0,
+      "minimumPitch": 28,
+      "maximumPitch": 88,
+      "nativeRender": [
+        {
+          "peak": 0.266618937253952,
+          "pitch": 28
+        },
+        {
+          "peak": 0.2660859227180481,
+          "pitch": 58
+        },
+        {
+          "peak": 0.23385107517242432,
+          "pitch": 88
+        }
+      ],
+      "fullyValidated": true
+    },
+    {
+      "bankID": "freepats.synthbrass1",
+      "program": 0,
+      "bank": 0,
+      "minimumPitch": 27,
+      "maximumPitch": 98,
+      "nativeRender": [
+        {
+          "peak": 0.234806627035141,
+          "pitch": 27
+        },
+        {
+          "peak": 0.2623310983181,
+          "pitch": 63
+        },
+        {
+          "peak": 0.2592613101005554,
+          "pitch": 98
+        }
+      ],
+      "fullyValidated": true
+    },
+    {
+      "bankID": "freepats.synthbrass2",
+      "program": 0,
+      "bank": 0,
+      "minimumPitch": 36,
+      "maximumPitch": 100,
+      "nativeRender": [
+        {
+          "peak": 0.34057697653770447,
+          "pitch": 36
+        },
+        {
+          "peak": 0.3403332233428955,
+          "pitch": 68
+        },
+        {
+          "peak": 0.33924445509910583,
+          "pitch": 100
+        }
+      ],
+      "fullyValidated": true
+    },
+    {
+      "bankID": "freepats.synthgoblins",
+      "program": 0,
+      "bank": 0,
+      "minimumPitch": 34,
+      "maximumPitch": 106,
+      "nativeRender": [
+        {
+          "peak": 0.36098185181617737,
+          "pitch": 34
+        },
+        {
+          "peak": 0.36020249128341675,
+          "pitch": 70
+        },
+        {
+          "peak": 0.2879784405231476,
+          "pitch": 106
+        }
+      ],
+      "fullyValidated": true
+    },
+    {
+      "bankID": "freepats.synthsoundtrack",
+      "program": 0,
+      "bank": 0,
+      "minimumPitch": 33,
+      "maximumPitch": 96,
+      "nativeRender": [
+        {
+          "peak": 0.3782823979854584,
+          "pitch": 33
+        },
+        {
+          "peak": 0.37309303879737854,
+          "pitch": 65
+        },
+        {
+          "peak": 0.36970090866088867,
+          "pitch": 96
+        }
+      ],
+      "fullyValidated": true
+    },
+    {
+      "bankID": "freepats.synthscifi",
+      "program": 0,
+      "bank": 0,
+      "minimumPitch": 31,
+      "maximumPitch": 101,
+      "nativeRender": [
+        {
+          "peak": 0.37789788842201233,
+          "pitch": 31
+        },
+        {
+          "peak": 0.3762012720108032,
+          "pitch": 66
+        },
+        {
+          "peak": 0.36721673607826233,
+          "pitch": 101
+        }
+      ],
+      "fullyValidated": true
+    },
+    {
+      "bankID": "freepats.synthcrystal",
+      "program": 0,
+      "bank": 0,
+      "minimumPitch": 32,
+      "maximumPitch": 103,
+      "nativeRender": [
+        {
+          "peak": 0.2658448815345764,
+          "pitch": 32
+        },
+        {
+          "peak": 0.24114541709423065,
+          "pitch": 68
+        },
+        {
+          "peak": 0.2317851185798645,
+          "pitch": 103
+        }
+      ],
+      "fullyValidated": true
+    },
+    {
+      "bankID": "freepats.synthbasslead",
+      "program": 0,
+      "bank": 0,
+      "minimumPitch": 21,
+      "maximumPitch": 108,
+      "nativeRender": [
+        {
+          "peak": 0.26329144835472107,
+          "pitch": 21
+        },
+        {
+          "peak": 0.371837317943573,
+          "pitch": 65
+        },
+        {
+          "peak": 0.24945808947086334,
+          "pitch": 108
+        }
+      ],
+      "fullyValidated": true
+    },
+    {
+      "bankID": "freepats.synthfifths",
+      "program": 0,
+      "bank": 0,
+      "minimumPitch": 33,
+      "maximumPitch": 101,
+      "nativeRender": [
+        {
+          "peak": 0.3762672245502472,
+          "pitch": 33
+        },
+        {
+          "peak": 0.37840569019317627,
+          "pitch": 67
+        },
+        {
+          "peak": 0.3722095191478729,
+          "pitch": 101
+        }
+      ],
+      "fullyValidated": true
+    },
+    {
+      "bankID": "freepats.synthsquare",
+      "program": 0,
+      "bank": 0,
+      "minimumPitch": 24,
+      "maximumPitch": 105,
+      "nativeRender": [
+        {
+          "peak": 0.26526468992233276,
+          "pitch": 24
+        },
+        {
+          "peak": 0.2596697211265564,
+          "pitch": 65
+        },
+        {
+          "peak": 0.2586473226547241,
+          "pitch": 105
+        }
+      ],
+      "fullyValidated": true
+    },
+    {
+      "bankID": "freepats.synthcalliope",
+      "program": 0,
+      "bank": 0,
+      "minimumPitch": 33,
+      "maximumPitch": 98,
+      "nativeRender": [
+        {
+          "peak": 0.2666376531124115,
+          "pitch": 33
+        },
+        {
+          "peak": 0.2618488669395447,
+          "pitch": 66
+        },
+        {
+          "peak": 0.2666158080101013,
+          "pitch": 98
+        }
+      ],
+      "fullyValidated": true
+    },
+    {
+      "bankID": "freepats.synthpadchoir",
+      "program": 0,
+      "bank": 0,
+      "minimumPitch": 33,
+      "maximumPitch": 108,
+      "nativeRender": [
+        {
+          "peak": 0.37081289291381836,
+          "pitch": 33
+        },
+        {
+          "peak": 0.3783915042877197,
+          "pitch": 71
+        },
+        {
+          "peak": 0.37682342529296875,
+          "pitch": 108
+        }
+      ],
+      "fullyValidated": true
+    },
+    {
+      "bankID": "freepats.sweeppad",
+      "program": 0,
+      "bank": 0,
+      "minimumPitch": 33,
+      "maximumPitch": 96,
+      "nativeRender": [
+        {
+          "peak": 0.2403404414653778,
+          "pitch": 33
+        },
+        {
+          "peak": 0.26756471395492554,
+          "pitch": 65
+        },
+        {
+          "peak": 0.2555086612701416,
+          "pitch": 96
+        }
+      ],
+      "fullyValidated": true
+    },
+    {
+      "bankID": "freepats.newage",
+      "program": 0,
+      "bank": 0,
+      "minimumPitch": 34,
+      "maximumPitch": 98,
+      "nativeRender": [
+        {
+          "peak": 0.2660660445690155,
+          "pitch": 34
+        },
+        {
+          "peak": 0.2661714553833008,
+          "pitch": 66
+        },
+        {
+          "peak": 0.2655763626098633,
+          "pitch": 98
+        }
+      ],
+      "fullyValidated": true
+    },
+    {
+      "bankID": "freepats.synthpadbowed",
+      "program": 0,
+      "bank": 0,
+      "minimumPitch": 31,
+      "maximumPitch": 105,
+      "nativeRender": [
+        {
+          "peak": 0.20455394685268402,
+          "pitch": 31
+        },
+        {
+          "peak": 0.2434615045785904,
+          "pitch": 68
+        },
+        {
+          "peak": 0.3324809968471527,
+          "pitch": 105
+        }
+      ],
+      "fullyValidated": true
+    },
+    {
+      "bankID": "freepats.synthstrings1",
+      "program": 0,
+      "bank": 0,
+      "minimumPitch": 24,
+      "maximumPitch": 100,
+      "nativeRender": [
+        {
+          "peak": 0.19007711112499237,
+          "pitch": 24
+        },
+        {
+          "peak": 0.19832190871238708,
+          "pitch": 62
+        },
+        {
+          "peak": 0.2561371624469757,
+          "pitch": 100
+        }
+      ],
+      "fullyValidated": true
+    },
+    {
+      "bankID": "freepats.synthstrings2",
+      "program": 0,
+      "bank": 0,
+      "minimumPitch": 24,
+      "maximumPitch": 101,
+      "nativeRender": [
+        {
+          "peak": 0.22438280284404755,
+          "pitch": 24
+        },
+        {
+          "peak": 0.24020957946777344,
+          "pitch": 63
+        },
+        {
+          "peak": 0.24444487690925598,
+          "pitch": 101
+        }
+      ],
+      "fullyValidated": true
+    },
+    {
+      "bankID": "freepats.ocarina",
+      "program": 0,
+      "bank": 0,
+      "minimumPitch": 60,
+      "maximumPitch": 92,
+      "nativeRender": [
+        {
+          "peak": 0.2660088539123535,
+          "pitch": 60
+        },
+        {
+          "peak": 0.26606208086013794,
+          "pitch": 76
+        },
+        {
+          "peak": 0.2657879590988159,
+          "pitch": 92
+        }
+      ],
+      "fullyValidated": true
+    },
+    {
+      "bankID": "freepats.fss-steelstringguitar",
+      "program": 0,
+      "bank": 0,
+      "minimumPitch": 39,
+      "maximumPitch": 85,
+      "nativeRender": [
+        {
+          "peak": 0.26604345440864563,
+          "pitch": 39
+        },
+        {
+          "peak": 0.265054315328598,
+          "pitch": 62
+        },
+        {
+          "peak": 0.2641737759113312,
+          "pitch": 85
+        }
+      ],
+      "fullyValidated": true
+    },
+    {
+      "bankID": "freepats.concertharp",
+      "program": 0,
+      "bank": 0,
+      "minimumPitch": 28,
+      "maximumPitch": 102,
+      "nativeRender": [
+        {
+          "peak": 0.2664087414741516,
+          "pitch": 28
+        },
+        {
+          "peak": 0.26750966906547546,
+          "pitch": 65
+        },
+        {
+          "peak": 0.25528788566589355,
+          "pitch": 102
+        }
+      ],
+      "fullyValidated": true
+    }
+  ],
+  "legacyCompatibilityWarnings": [
+    {
+      "bankID": "drums",
+      "instrumentID": "sampled.drums",
+      "reason": "Legacy bank renders some mapped keys silently: [52, 53, 54, 55, 58, 60, 61, 62, 63, 64]",
+      "status": "grandfathered-partial-compatibility",
+      "silentNativePitches": [
+        52,
+        53,
+        54,
+        55,
+        58,
+        60,
+        61,
+        62,
+        63,
+        64
+      ],
+      "silentProjectPitches": [
+        41,
+        42,
+        43,
+        44,
+        45,
+        46,
+        47,
+        48,
+        49,
+        50,
+        51,
+        52,
+        53,
+        55,
+        56,
+        57,
+        59
+      ]
+    }
+  ],
+  "exclusions": [
+    {
+      "reason": "No downloadable SF2 version; SFZ-only or unavailable.",
+      "sourceURL": "https://freepats.zenvoid.org/Organ/accordion.html"
+    },
+    {
+      "reason": "Overlapping General MIDI collection; individual banks are cataloged.",
+      "sourceURL": "https://freepats.zenvoid.org/SoundSets/general-midi.html"
+    },
+    {
+      "reason": "Source unavailable: HTTP Error 404: Not Found",
+      "sourceURL": "https://freepats.zenvoid.org/SoundSets/gm-percussion-set.html"
+    },
+    {
+      "sourceURL": "https://freepats.zenvoid.org/ChromaticPercussion/glass.html",
+      "name": "Glasses of water",
+      "version": "2019-12-27",
+      "url": "https://freepats.zenvoid.org/ChromaticPercussion/Glass/Glass-SF2-20191227.7z",
+      "archiveSHA256": "e73912077f2cf4c16a6861ba0752c864ce78c1b5f609b890dfcbdb312a8bfb15",
+      "sha256": "c86204d29aa2cb660b00d074468dbfc642cd9b93bdfe639555ba008a6c283968",
+      "reason": "AVAudioUnitSampler renders advertised pitch 81 silently (peak 0.0)"
+    },
+    {
+      "sourceURL": "https://freepats.zenvoid.org/ChromaticPercussion/hang.html",
+      "name": "Hang tuned in D minor",
+      "version": "2022-03-30",
+      "url": "https://github.com/freepats/hang-D-minor/releases/download/2022-03-30/Hang-D-minor-SF2-20220330.7z",
+      "archiveSHA256": "72dfe7c1e95898a74bcfb18c58ae4aae6e275454f3f677b163ede8255cac4bfe",
+      "sha256": "6148308e484754c6a5468b344e46ed7b118ae73e12cb20231e2425e2beeef7f5",
+      "reason": "AVAudioUnitSampler renders advertised pitch 67 silently (peak 0.0)"
+    },
+    {
+      "sourceURL": "https://freepats.zenvoid.org/ChromaticPercussion/tubular-bells.html",
+      "name": "Tubular Bells",
+      "version": "2024-11-30",
+      "url": "https://github.com/freepats/tubular-bells1/releases/download/2024-11-30/TubularBells-SF2-20241130.7z",
+      "archiveSHA256": "e62e827ccfc11d843d91d6d54048627c02dbbc5ae56e2cdc1cb8dc5b765ea337",
+      "sha256": "29165c740478c6d87136e4b4ddb9134ad97555f829cc5b6d6fdfcfa2b20cb565",
+      "reason": "AVAudioUnitSampler renders advertised pitch 71 silently (peak 0.0)"
+    },
+    {
+      "sourceURL": "https://freepats.zenvoid.org/ElectricGuitar/clean-electric-guitar.html",
+      "name": "FSBS Electric Guitar Clean #1",
+      "version": "2026-08-07",
+      "url": "https://github.com/freepats/electric-guitar-FSBS-clean/releases/download/2026-08-07/EGuitarFSBS-clean-SF2-20260807.7z",
+      "archiveSHA256": "6d338afefe0efb629afd9ba28a5c8c129fc28b97ef1b57a31ebceb7bf0e3bf65",
+      "sha256": "e66351135ff7c06ca0fee799688e767c917a085988ff29691c02f72c0a4ddabe",
+      "reason": "AVAudioUnitSampler renders advertised pitch 61 silently (peak 0.0)"
+    },
+    {
+      "sourceURL": "https://freepats.zenvoid.org/ElectricGuitar/clean-electric-guitar.html",
+      "name": "FSBS Electric Guitar Clean #2 (Jazz)",
+      "version": "2026-08-07",
+      "url": "https://github.com/freepats/electric-guitar-FSBS-jazz/releases/download/2026-08-07/EGuitarFSBS-jazz-SF2-20260807.7z",
+      "archiveSHA256": "ef6e3635c0b7eb2b78f1cac8754ad9b7c2714fb64eca07ff8a459380acf50fa7",
+      "sha256": "f3d214ed7cb040ab322eabbb89b1cd912826f14bc1a28aa6db8eee846b5689ab",
+      "reason": "AVAudioUnitSampler renders advertised pitch 61 silently (peak 0.0)"
+    },
+    {
+      "sourceURL": "https://freepats.zenvoid.org/ElectricGuitar/clean-electric-guitar.html",
+      "name": "FSBS Electric Guitar Direct",
+      "version": "2022-09-11",
+      "url": "https://github.com/freepats/electric-guitar-FSBS-direct/releases/download/2022-09-11/EGuitarFSBS-direct-SF2-20220911.7z",
+      "archiveSHA256": "dcdadeab31c7aff67ace2556ede4021897743b7ae88c187f2d12988483403295",
+      "sha256": "cd0b9d1e239148c3ad29acc43090b463c6d887f7d3cecb05b4b292be84a86fd8",
+      "reason": "AVAudioUnitSampler renders advertised pitch 61 silently (peak 0.0)"
+    },
+    {
+      "sourceURL": "https://freepats.zenvoid.org/ElectricGuitar/distorted-electric-guitar.html",
+      "name": "FSBS Electric Guitar Distorted #1",
+      "version": "2022-09-11",
+      "url": "https://github.com/freepats/electric-guitar-FSBS-dist1/releases/download/2022-09-11/EGuitarFSBS-dist1-SF2-20220911.7z",
+      "archiveSHA256": "4f0859f02c3c001059b73c98f9300bbf34c6490e6b235d60c8356291a38313d0",
+      "sha256": "136e953143a5c52b0526ccc7963c9e1fc0bf6002e8b6712f7278aff7bf9d3d10",
+      "reason": "AVAudioUnitSampler renders advertised pitch 61 silently (peak 0.0)"
+    },
+    {
+      "sourceURL": "https://freepats.zenvoid.org/ElectricGuitar/distorted-electric-guitar.html",
+      "name": "FSBS Electric Guitar Distorted #2",
+      "version": "2022-09-11",
+      "url": "https://github.com/freepats/electric-guitar-FSBS-dist2/releases/download/2022-09-11/EGuitarFSBS-dist2-SF2-20220911.7z",
+      "archiveSHA256": "0ed99135d955940c1200e09ca9e36e261dfebbe8767ae58da6f298fe29fdd146",
+      "sha256": "2859f619d97de590fe94bf57102b741eacefd2782de22a88b7e26a4de512d488",
+      "reason": "AVAudioUnitSampler renders advertised pitch 61 silently (peak 0.0)"
+    },
+    {
+      "sourceURL": "https://freepats.zenvoid.org/Ethnic/bagpipe.html",
+      "name": "Bagpipe",
+      "version": "2026-08-06",
+      "url": "https://github.com/freepats/bagpipe/releases/download/2026-08-06/Bagpipe-SF2-20260806.7z",
+      "archiveSHA256": "f3b3ac18a37c036e22bd09186bd38499f65428f0b7457df4bd179f6d52b34e76",
+      "sha256": "e1950f4033f978b6a280053360004ea9c6a8aa6f75a259abad974046c5193a20",
+      "reason": "AVAudioUnitSampler renders advertised pitch 81 silently (peak 0.0)"
+    },
+    {
+      "sourceURL": "https://freepats.zenvoid.org/Ethnic/kalimba.html",
+      "name": "Kalimba",
+      "version": "2019-05-31",
+      "url": "https://freepats.zenvoid.org/Ethnic/Kalimba/Kalimba-SF2-20190723.tar.xz",
+      "archiveSHA256": "c391c9c9ed4e91f33843383d6ffefe785d99acfa9594d9fc1945afba4b582476",
+      "sha256": "8232588e69ca4554f52bd9336099c45d2ca18bd8bc01b2efde8016bfee2db978",
+      "reason": "AVAudioUnitSampler renders advertised pitch 66 silently (peak 0.0)"
+    },
+    {
+      "sourceURL": "https://freepats.zenvoid.org/Percussion/orchestral-percussion.html",
+      "name": "Timpani",
+      "version": "2024-08-10",
+      "url": "https://github.com/freepats/timpani/releases/download/2024-08-10/Timpani-SF2-20240810.7z",
+      "archiveSHA256": "6a8dff96d9ad109c7ba6155b11f2c2dcc635850cdd43fc1db460f80c45a8e066",
+      "sha256": "f4f133d63bca297c98143e95c1f3fe5418a2a51d7b1f4d5470971eec7885d87b",
+      "reason": "AVAudioUnitSampler renders advertised pitch 48 silently (peak 0.0)"
+    },
+    {
+      "sourceURL": "https://freepats.zenvoid.org/Percussion/world-and-rare-percussion.html",
+      "name": "World percussion",
+      "version": "2020-09-05",
+      "url": "https://github.com/freepats/world-percussion/releases/download/2020-09-05/WorldPercussion-SF2-20200905.7z",
+      "archiveSHA256": "5d72c35572259804091657e094fb094c4ee45ffd4bc37f1708878ef6cfeeb129",
+      "sha256": "0a848e8cb3df5ba9f2720093267fdc4edf9d8512a1a367f7a0365440cb629103",
+      "reason": "AVAudioUnitSampler renders advertised pitch 60 silently (peak 0.0)"
+    },
+    {
+      "sourceURL": "https://freepats.zenvoid.org/Wind/recorder.html",
+      "name": "Wooden Recorder",
+      "version": "2020-12-05",
+      "url": "https://freepats.zenvoid.org/Wind/Recorder1/Recorder-SF2-20201205.7z",
+      "archiveSHA256": "60258c60fcef9e398aca22749cdbeaba792b8fa7c9115e63ceef3aff5d4bd1c0",
+      "sha256": "fb89e90e6b8b40e6463c7edab8cbf4583abbd8fa2d3e32a9250ce7b91d480722",
+      "reason": "AVAudioUnitSampler renders advertised pitch 85 silently (peak 0.0)"
+    }
+  ]
+}

@@ -1,0 +1,57 @@
+[
+  {
+    "id": "piano",
+    "name": "Upright Piano KW",
+    "version": "2022-02-21",
+    "license": "CC0-1.0",
+    "url": "https://freepats.zenvoid.org/Piano/UprightPianoKW/UprightPianoKW-SF2-20220221.7z",
+    "archiveSHA256": "17c084c6e4205233dc49b34e4bc44a9b2d7c7a2c02b04729ecda77079b07c826",
+    "member": "UprightPianoKW-SF2-20220221/UprightPianoKW-20220221.sf2",
+    "file": "piano.sf2",
+    "sha256": "d9f5157720963671906727ca2e12b3293fd822c831bb0de477dd1c5f3ad37108"
+  },
+  {
+    "id": "guitar",
+    "name": "Spanish classical guitar",
+    "version": "2019-06-18",
+    "license": "CC0-1.0",
+    "url": "https://freepats.zenvoid.org/Guitar/SpanishClassicalGuitar/SpanishClassicalGuitar-SF2-20190618.7z",
+    "archiveSHA256": "8c192f1fc640a553199a4a43a17ae12354a6a05e3d6aad79bd43b5d29314ff51",
+    "member": "SpanishClassicalGuitar-SF2-20190618/SpanishClassicalGuitar-20190618.sf2",
+    "file": "guitar.sf2",
+    "sha256": "0d4c08ea8c1c8924b3829084b0c8778f6d6b906f331e44fde51bc159f76b03b9"
+  },
+  {
+    "id": "bass",
+    "name": "Bass Guitar YR finger",
+    "version": "2019-09-30",
+    "license": "CC0-1.0",
+    "url": "https://github.com/freepats/electric-bass-YR/releases/download/2019-09-30/FingerBassYR-SF2-20190930.7z",
+    "archiveSHA256": "f5b5cfe04435a9e9037d1f97d515dc596535acf26637db9579d724cd757f179e",
+    "member": "FingerBassYR SF2-20190930/FingerBassYR 20190930.sf2",
+    "file": "bass.sf2",
+    "sha256": "bd1332696f61c0cb254ce7f202fb6b945ff46ccb1dcdd62e345a50bde3afb165"
+  },
+  {
+    "id": "mallets",
+    "name": "Xylophone medium mallets",
+    "version": "2020-07-06",
+    "license": "CC0-1.0",
+    "url": "https://freepats.zenvoid.org/ChromaticPercussion/Xylophone1/Xylophone-MediumMallets-SF2-20200706.tar.xz",
+    "archiveSHA256": "b142f2a25f0610f13d1d657c60ae3f28be58cf026d216826125c6fb9d1af631b",
+    "member": "Xylophone-MediumMallets-SF2-20200706/Xylophone-MediumMallets-20200706.sf2",
+    "file": "mallets.sf2",
+    "sha256": "d831fab19aa2de90ce82dc91126ab5b51abb7be4df2b53648de40a715a9af51a"
+  },
+  {
+    "id": "drums",
+    "name": "MuldjordKit",
+    "version": "2020-10-18",
+    "license": "CC-BY-4.0",
+    "url": "https://github.com/freepats/muldjordkit/releases/download/2020-10-18/MuldjordKit-SF2-20201018.7z",
+    "archiveSHA256": "aef4c9e0a96f9a899a7838f65ff07565f6af247bbb4ff31e24dba3331a671a96",
+    "member": "MuldjordKit-SF2-20201018/MuldjordKit 20201018.sf2",
+    "file": "drums.sf2",
+    "sha256": "fec611c55b5e1c53ea3e6df1e6779c9f18502fc6455ee45edc51d5a2b4881055"
+  }
+]
