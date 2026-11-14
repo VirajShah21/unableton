@@ -104,4 +104,4 @@ Superhuman must hide manual editing affordances and prevent their commands, incl
 
 Application code is Apache 2.0. Factory assets keep their individual licenses and notices. Pin download URLs, versions, archive/member hashes, and source credits in the reviewed Core sound-library catalog and third-party notices. Do not commit large sound banks, API keys, build artifacts, or personal projects.
 
-Update this file and the README when behavior or module boundaries materially change. Keep public documentation honest about what was tested and what remains unverified. Public hosting, notarization, and signed distribution require separate release work.
+Update this file and the README when behavior or module boundaries materially change. Keep public documentation honest about what was tested and what remains unverified. Publishing the source does not authorize or provide a signed distribution release. Developer signing, notarization, and release packaging remain separate release work.

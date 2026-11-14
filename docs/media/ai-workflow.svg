@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="260" viewBox="0 0 1600 260" role="img" aria-labelledby="title desc">
+<title id="title">How Unableton applies an AI edit</title>
+<desc id="desc">Describe your idea. Compose a working draft. Validate musical commands. Apply the result as one undoable change.</desc>
+<rect width="1600" height="260" rx="24" fill="#1b202b"/>
+<g font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif">
+
+<rect x="42" y="44" width="310" height="172" rx="13" fill="#252b38" stroke="#ffffff" stroke-opacity="0.10"/>
+<rect x="64" y="66" width="27" height="4" rx="2" fill="#b4a6ff" />
+<text x="64" y="108" font-size="26" font-weight="600" fill="#f4f6fb" >Prompt</text>
+<text x="64" y="148" font-size="21" font-weight="400" fill="#bfc7d7" >Describe the music.</text>
+<text x="64" y="178" font-size="21" font-weight="400" fill="#bfc7d7" >Refine it in chat.</text>
+<path d="M370 130h56m-9-9 12 9-12 9" fill="none" stroke="#8490a6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<rect x="444" y="44" width="310" height="172" rx="13" fill="#252b38" stroke="#ffffff" stroke-opacity="0.10"/>
+<rect x="466" y="66" width="27" height="4" rx="2" fill="#68d8d0" />
+<text x="466" y="108" font-size="26" font-weight="600" fill="#f4f6fb" >Working draft</text>
+<text x="466" y="148" font-size="21" font-weight="400" fill="#bfc7d7" >Compose notes, rhythms,</text>
+<text x="466" y="178" font-size="21" font-weight="400" fill="#bfc7d7" >and sound settings.</text>
+<path d="M772 130h56m-9-9 12 9-12 9" fill="none" stroke="#8490a6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<rect x="846" y="44" width="310" height="172" rx="13" fill="#252b38" stroke="#ffffff" stroke-opacity="0.10"/>
+<rect x="868" y="66" width="27" height="4" rx="2" fill="#ffac6c" />
+<text x="868" y="108" font-size="26" font-weight="600" fill="#f4f6fb" >Validation</text>
+<text x="868" y="148" font-size="21" font-weight="400" fill="#bfc7d7" >Check shared commands</text>
+<text x="868" y="178" font-size="21" font-weight="400" fill="#bfc7d7" >against the song.</text>
+<path d="M1174 130h56m-9-9 12 9-12 9" fill="none" stroke="#8490a6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<rect x="1248" y="44" width="310" height="172" rx="13" fill="#252b38" stroke="#ffffff" stroke-opacity="0.10"/>
+<rect x="1270" y="66" width="27" height="4" rx="2" fill="#7eaef5" />
+<text x="1270" y="108" font-size="26" font-weight="600" fill="#f4f6fb" >Your song</text>
+<text x="1270" y="148" font-size="21" font-weight="400" fill="#bfc7d7" >Apply once.</text>
+<text x="1270" y="178" font-size="21" font-weight="400" fill="#bfc7d7" >Undo the whole change.</text>
+</g></svg>
