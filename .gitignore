@@ -2,6 +2,7 @@
 .swiftpm/
 .cache/
 dist/
+*.dmg
 .DS_Store
 *.unableton/
 *.wav

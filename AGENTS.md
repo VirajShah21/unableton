@@ -95,6 +95,7 @@ Superhuman must hide manual editing affordances and prevent their commands, incl
 - `swift build` builds the SwiftPM executable and libraries.
 - `swift test` runs the core, audio, and AI tests. Use filters for focused changes.
 - `./script/build_and_run.sh` builds without network/sample downloads, stages `dist/Unableton.app`, and opens it. The Codex Run action uses this script.
+- `./script/package_dmg.sh` builds a Release app at `dist/release/Unableton.app` and a versioned drag-to-Applications DMG in `dist/`, using `Resources/DMG/background.png`. It requires `create-dmg` and a graphical Finder session. `--app` wraps an existing app unchanged; `--output`, `--overwrite`, and `--help` control packaging. Default builds are ad-hoc signed development previews; Developer ID signing, notarization, and stapling remain separate release work. Verify the mounted layout in Finder and keep DMGs out of Git.
 - Use meaningful tests for transactional edits, save/reopen, MIDI interoperability, render timing, non-silent audio, note termination, tool loops, and failure/cancellation behavior.
 - Verify native UI with the connected computer-use surface. Browser instructions apply only if browser work is needed; this is a native app.
 - Before release, validate the packaged app on macOS 26 and 27, keyboard focus, accessibility, recording permission states, device interruption, and real-key generation/refinement across multiple chats.

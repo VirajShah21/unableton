@@ -38,7 +38,9 @@ Instrument parts stay editable. Recordings and generated singing stay audio. Eac
 
 ## Get started
 
-You need **macOS 26 or newer** and Xcode command-line tools with **Swift 6.2 or newer**. There is no notarized app download yet; build the development app from source.
+Download the **Apple Silicon development preview** from [GitHub Releases](https://github.com/VirajShah21/unableton/releases/latest). Open the DMG and drag Unableton to Applications. It requires **macOS 26 or newer** and is ad-hoc signed, not notarized, so macOS may block it from opening.
+
+To build from source, you also need Xcode command-line tools with **Swift 6.2 or newer**.
 
 ```sh
 git clone https://github.com/VirajShah21/unableton.git
@@ -132,6 +134,21 @@ Playback and export share a sample-timed musical schedule. Audio callbacks do no
 Read [AGENTS.md](AGENTS.md) for product direction and engineering rules. Changes to musical behavior belong in shared project commands before being exposed through the UI or AI. Keep API keys, song packages, sampled banks, and build output out of commits.
 
 Bug reports and focused pull requests are welcome. Include reproduction steps and relevant checks. See the [user guide](docs/user-guide.md) for detailed behavior and [verification notes](docs/verification.md) for tested flows and remaining release checks.
+
+## Build a DMG
+
+Install [create-dmg](https://github.com/create-dmg/create-dmg), then run the packaging script from a graphical macOS session:
+
+```sh
+brew install create-dmg
+./script/package_dmg.sh
+```
+
+The script builds a Release app at `dist/release/Unableton.app` and creates `dist/Unableton-<version>.dmg`. The DMG opens with the music-themed [background](Resources/DMG/background.png), the app, and an Applications shortcut. Drag Unableton to Applications to install it. Packaging uses Finder to save the window layout; macOS may ask for permission to automate Finder.
+
+Use `--app /path/to/Unableton.app` to package an existing app without modifying it, `--output /path/to/Unableton.dmg` to choose the destination, and `--overwrite` to replace an existing DMG. Run `./script/package_dmg.sh --help` for details. Build output stays outside Git; packaging downloads no sound banks.
+
+The default app is ad-hoc signed for development. Creating a DMG does not make it a signed public release: Developer ID signing, notarization, and stapling remain separate release work.
 
 ## Project status
 

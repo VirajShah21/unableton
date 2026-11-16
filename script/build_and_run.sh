@@ -15,19 +15,7 @@ while IFS= read -r task_pid; do
   fi
 done < <(pgrep -x "$APP_NAME" || true)
 
-swift build
-BUILD_DIR="$(swift build --show-bin-path)"
-mkdir -p "$APP_BUNDLE/Contents/MacOS" "$APP_BUNDLE/Contents/Resources"
-# Never ship previously staged sample content.
-rm -rf "$APP_BUNDLE/Contents/Resources/FactoryLibrary"
-cp "$BUILD_DIR/$APP_NAME" "$APP_BUNDLE/Contents/MacOS/$APP_NAME"
-cp "$ROOT_DIR/Resources/Info.plist" "$APP_BUNDLE/Contents/Info.plist"
-cp -R "$BUILD_DIR/Unableton_UnabletonCore.bundle" "$APP_BUNDLE/Contents/Resources/"
-rm -f "$APP_BUNDLE/Contents/Resources/factory-manifest.json"
-cp "$ROOT_DIR/THIRD_PARTY_NOTICES.md" "$ROOT_DIR/LICENSE" "$APP_BUNDLE/Contents/Resources/"
-if [[ -f "$ROOT_DIR/Resources/Unableton.icns" ]]; then cp "$ROOT_DIR/Resources/Unableton.icns" "$APP_BUNDLE/Contents/Resources/"; fi
-chmod +x "$APP_BUNDLE/Contents/MacOS/$APP_NAME"
-/usr/bin/codesign --force --deep --sign - "$APP_BUNDLE" >/dev/null
+APP_BUNDLE="$("$ROOT_DIR/script/build_app.sh" debug)"
 
 case "$MODE" in
   run) /usr/bin/open -n "$APP_BUNDLE" ;;
