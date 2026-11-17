@@ -52,3 +52,26 @@ The reviewed versions, exact archive/member hashes and source URLs are pinned in
 Legacy MuldjordKit compatibility: the native sampler renders only the kick/snare mappings reliably in the current audit. Other mapped notes produced silence. The bank remains listed to preserve existing songs and is not marked fully validated. See docs/sound-library-audit.json for exact keys.
 
 The steel-string guitar uses GPL version 3 or later with the FreePats sample exception; see [FreePats licensing](https://freepats.zenvoid.org/licenses.html#GPL_exception) and the bank’s included license files. Attribution-licensed banks preserve their creator credits above. Photo licenses shown on source pages are separate from the sound-bank license; Unableton does not download or distribute those photos.
+
+## Local song processing
+
+The app can explicitly install a separate managed runtime and models for local song references. These are not sound banks, are not included in song packages, and do not download during app startup or builds. OpenAI remains a separate service for chat/composition and optional audio inspection.
+
+This pinned local-processing profile requires Apple silicon. The PyTorch 2.5.1 macOS wheels used by the profile are arm64; Intel Macs are not supported by this runtime.
+
+| Component | Pinned version | Source and notice |
+| --- | --- | --- |
+| Demucs | 4.0.1, htdemucs model | [Meta / Alexandre Défossez and contributors](https://github.com/facebookresearch/demucs), [MIT license](https://github.com/facebookresearch/demucs/blob/main/LICENSE) |
+| Basic Pitch | 0.4.0, ICASSP 2022 Core ML model | [Spotify Audio Intelligence Lab](https://github.com/spotify/basic-pitch), [Apache-2.0 license and notices](https://github.com/spotify/basic-pitch/blob/main/LICENSE) |
+| CPython | 3.10.19 | [Python Software Foundation](https://www.python.org/downloads/release/python-31019/), [PSF license](https://docs.python.org/3.10/license.html) |
+| PyTorch / TorchAudio | 2.5.1 / 2.5.1 | [PyTorch](https://github.com/pytorch/pytorch/blob/v2.5.1/LICENSE), [TorchAudio](https://github.com/pytorch/audio/blob/v2.5.1/LICENSE) |
+| Core ML Tools | 8.3.0 | [Apple](https://github.com/apple/coremltools/blob/8.3/LICENSE.txt) |
+
+The complete Python dependency versions and package hashes are recorded in `Resources/LocalProcessing/requirements.lock`; each installed distribution keeps its upstream license and notices. The app does not treat its Apache-2.0 license as replacing those licenses.
+
+The local model manifest is `Resources/LocalProcessing/manifest.json`, profile `demucs-4.0.1-htdemucs_basic-pitch-0.4.0-coreml-v1`:
+
+- Demucs: official [955717e8-8726e21a.th](https://dl.fbaipublicfiles.com/demucs/hybrid_transformer/955717e8-8726e21a.th), 84,141,911 bytes, SHA-256 `8726e21a993978c7ba086d3872e7608d7d5bfca646ca4aca459ffda844faa8b4`.
+- Basic Pitch: `basic_pitch/saved_models/icassp_2022/nmp.mlpackage` from the pinned distribution, tree SHA-256 `4b0c371ebc032c02caa4103c26578c6544ca8e7b2b98c5b2ed09a8b5b85e5f48`. The tree hash covers sorted relative file paths and their individual SHA-256 digests.
+
+Source separation and note transcription can contain errors.

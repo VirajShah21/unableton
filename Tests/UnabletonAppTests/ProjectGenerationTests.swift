@@ -30,13 +30,13 @@ private actor ControlledAgent: MusicGenerating {
         } onCancel: { Task { await self.cancel(index) } }
     }
     func calls() -> [Invocation] { invocations }
-    func complete(_ index: Int, commands: [ProjectCommand] = [], summary: String = "Updated the song.", generatedAssets: [UUID: Data] = [:]) throws {
+    func complete(_ index: Int, commands: [ProjectCommand] = [], summary: String = "Updated the song.", generatedAssets: [UUID: Data] = [:], generatedFiles: [UUID: URL] = [:], responseItems: [JSONValue]? = nil) throws {
         guard let continuation = pending.removeValue(forKey: index), invocations.indices.contains(index) else { throw FixtureError.missingCall }
         var draft = invocations[index].song
         do {
             try ProjectEditor.apply(commands, to: &draft)
-            let items = invocations[index].conversation.responseItems + [.object(["fixture_call": .number(Double(index))])]
-            continuation.resume(returning: AgentResult(song: draft, summary: summary, model: "test-model", inputTokens: 10, outputTokens: 5, responseItems: items, runID: UUID(), generatedAssets: generatedAssets))
+            let items = responseItems ?? (invocations[index].conversation.responseItems + [.object(["fixture_call": .number(Double(index))])])
+            continuation.resume(returning: AgentResult(song: draft, summary: summary, model: "test-model", inputTokens: 10, outputTokens: 5, responseItems: items, runID: UUID(), generatedAssets: generatedAssets, generatedFiles: generatedFiles))
         } catch { continuation.resume(throwing: error) }
     }
     private func cancel(_ index: Int) { pending.removeValue(forKey: index)?.resume(throwing: CancellationError()) }
@@ -94,6 +94,62 @@ private func melodyProject() -> ProjectFile {
 
 @MainActor
 struct ProjectGenerationTests {
+    @Test func referenceFilesCommitAsOneUndoAndRemainPackagedAfterSourceDeletion() async throws {
+        var original = melodyProject(), fixture = try vocalFixture(sourceClip: original.song.tracks[0].clips[0])
+        let source = SongAttachment(fileName: "Source.wav", duration: 0.5, sampleRate: 16_000, channels: 1,
+            byteCount: fixture.data.count, sha256: SongAttachmentLimits.sha256(fixture.data))
+        original.attachments = [source]
+        fixture.asset.vocalTake = nil
+        fixture.asset.referenceDerivation = ReferenceAudioDerivation(attachmentID: source.id, stem: "vocals", sourceStartSeconds: 0, sourceEndSeconds: 0.5)
+        let fileURL = FileManager.default.temporaryDirectory.appendingPathComponent("Reference-Generation-\(UUID()).wav")
+        try fixture.data.write(to: fileURL); defer { try? FileManager.default.removeItem(at: fileURL) }
+        let agent = ControlledAgent(), session = makeSession(agent: agent, file: original, assets: [source.id: fixture.data])
+        defer { session.close() }
+        let undo = UndoManager(); undo.groupsByEvent = false; session.undoManager = undo
+        session.setPendingAttachments([source.id], conversationID: try #require(session.selectedConversationID))
+        undo.beginUndoGrouping()
+        session.composer = "Use the original vocals."; session.submitPrompt()
+        try await waitUntil { await agent.calls().count == 1 }
+        try await agent.complete(0, commands: fixture.commands, generatedFiles: [fixture.asset.id: fileURL])
+        try await waitUntil { session.generationTask == nil }
+        undo.endUndoGrouping()
+        try FileManager.default.removeItem(at: fileURL)
+        #expect(session.file.song.assets == [fixture.asset])
+        #expect(session.file.generations.count == 1 && session.file.generations[0].appliedRevision == session.file.song.revision)
+        let saved = try session.document.snapshot(contentType: .unabletonProject)
+        let reopened = try ProjectArchive.decode(ProjectArchive.encode(project: saved.project, blobURLs: saved.blobs?.urls ?? [:], lease: saved.blobs?.lease))
+        #expect(reopened.assets[fixture.asset.id] == fixture.data && reopened.assets[source.id] == fixture.data)
+        #expect(reopened.project.song.assets.first?.referenceDerivation == fixture.asset.referenceDerivation)
+        undo.undo()
+        #expect(session.file.song == original.song || session.file.song.tracks == original.song.tracks)
+        #expect(!undo.canUndo && undo.canRedo)
+        #expect(session.assetData[fixture.asset.id] == fixture.data)
+        undo.redo()
+        #expect(session.file.song.assets == [fixture.asset])
+        let names = try FileManager.default.contentsOfDirectory(atPath: session.cacheURL.path)
+        #expect(!names.contains(where: { $0.hasPrefix("Generated-") || $0.hasPrefix("ReferenceDraft-") }))
+    }
+
+    @Test func oversizedCompletedMetadataRejectsAndRollsBackFileAssets() async throws {
+        let original = melodyProject(), fixture = try vocalFixture(sourceClip: original.song.tracks[0].clips[0])
+        let url = FileManager.default.temporaryDirectory.appendingPathComponent("Rejected-Reference-\(UUID()).wav")
+        try fixture.data.write(to: url); defer { try? FileManager.default.removeItem(at: url) }
+        let agent = ControlledAgent(), session = makeSession(agent: agent, file: original)
+        defer { session.close() }
+        session.composer = "Add audio."; session.submitPrompt()
+        try await waitUntil { await agent.calls().count == 1 }
+        try await agent.complete(0, commands: fixture.commands, generatedFiles: [fixture.asset.id: url],
+            responseItems: [.string(String(repeating: "x", count: SongAttachmentLimits.maximumMetadataBytes))])
+        try await waitUntil { session.generationTask == nil }
+        #expect(session.file.song == original.song && session.file.generations.isEmpty)
+        #expect(session.file.conversations[0].responseItems.isEmpty)
+        #expect(session.document.blobStore?.snapshot().urls[fixture.asset.id] == nil)
+        #expect(session.errorMessage?.contains("metadata") == true)
+        let saved = try session.document.snapshot(contentType: .unabletonProject)
+        _ = try ProjectArchive.encode(project: saved.project, blobURLs: saved.blobs?.urls ?? [:], lease: saved.blobs?.lease)
+        #expect(try FileManager.default.contentsOfDirectory(atPath: session.cacheURL.path).isEmpty)
+    }
+
     @Test func vocalAssetsCommitAsOneUndoAndSurviveSaveReopen() async throws {
         let original = melodyProject(), agent = ControlledAgent(), undo = UndoManager()
         let fixture = try vocalFixture(sourceClip: original.song.tracks[0].clips[0])

@@ -1,5 +1,7 @@
 import Foundation
 
+public enum GenerationDependency: Sendable { case sounds, referenceProcessing }
+
 /// One prompt owns this budget, including model upgrades and revision replans.
 /// It contains no credentials, document state, or audio-thread work.
 public actor GenerationBudget: Equatable {
@@ -15,6 +17,7 @@ public actor GenerationBudget: Equatable {
     private var excludedTime: TimeInterval = 0
     private var waitStartedAt: TimeInterval?
     private var waitTokens: Set<UUID> = []
+    private var waitedForReferences = false
     private var usage = GenerationUsage()
 
     public init(maximumRequests: Int = 32, timeout: TimeInterval = 300, maximumRetries: Int = 2,
@@ -45,6 +48,9 @@ public actor GenerationBudget: Equatable {
         try Task.checkCancellation()
         guard validConfiguration else { throw AgentError.configuration("Generation limits must be positive and finite.") }
         guard dependencyElapsed() < maximumDependencyWait else {
+            if waitedForReferences {
+                throw ReferenceProcessingFailure("Waiting for sounds or song processing took too long. Your song is unchanged. Send a new prompt when the dependency is ready.")
+            }
             throw InstrumentDependencyError("Waiting for sounds took too long. Your song is unchanged. Finish installation in Sound Library and retry.")
         }
         guard activeElapsed() < maximumActiveTime else {
@@ -57,15 +63,18 @@ public actor GenerationBudget: Equatable {
         return max(0, maximumActiveTime - activeElapsed())
     }
 
-    /// Only consent and sound installation belong in this scope. Model calls,
-    /// rendering and vocal generation continue to use the active-work allowance.
+    /// Sound consent/installation and local reference processing
+    /// share one cumulative allowance. Composer/audio-inspection model calls,
+    /// draft rendering and vocal generation still consume active work time.
     public func withDependencyWait<T: Sendable>(
+        kind: GenerationDependency = .sounds,
         _ operation: @escaping @Sendable () async throws -> T
     ) async throws -> T {
         try check()
         let token = UUID()
         if waitTokens.isEmpty { waitStartedAt = now() }
         waitTokens.insert(token)
+        if kind == .referenceProcessing { waitedForReferences = true }
         defer { endWait(token) }
         return try await withThrowingTaskGroup(of: T.self) { group in
             group.addTask { try await operation() }

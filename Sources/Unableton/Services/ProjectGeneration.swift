@@ -11,6 +11,7 @@ struct QueuedPrompt {
 }
 extension ProjectSession {
     func submitPrompt() {
+        guard !closed, !attachmentImporting else { return }
         let text = composer.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !text.isEmpty else { return }
         do {
@@ -21,12 +22,18 @@ extension ProjectSession {
         } catch { errorMessage = error.localizedDescription; return }
         if selectedConversationID == nil { newConversation() }
         guard let id = selectedConversationID, let index = file.conversations.firstIndex(where: { $0.id == id }) else { return }
-        let message = ChatMessage(role: "user", text: text)
-        if file.conversations[index].messages.isEmpty { file.conversations[index].title = String(text.prefix(48)) }
-        file.conversations[index].messages.append(message)
+        let message = ChatMessage(role: "user", text: text, attachmentIDs: pendingAttachmentIDs.isEmpty ? nil : pendingAttachmentIDs)
+        var submitted = file
+        if submitted.conversations[index].messages.isEmpty { submitted.conversations[index].title = String(text.prefix(48)) }
+        submitted.conversations[index].messages.append(message)
+        submitted.conversations[index].draftAttachmentIDs = nil
+        do { try ProjectArchive.validateMetadata(submitted) }
+        catch { errorMessage = error.localizedDescription; return }
+        file = submitted
         pendingPrompts.append(QueuedPrompt(conversationID: id, messageID: message.id, selection: selection))
         queuedCount = pendingPrompts.count
         composer = ""
+        composerAttachments[id] = []
         if generationTask == nil {
             generationTask = Task { await processQueue() }
         }
@@ -69,6 +76,7 @@ extension ProjectSession {
         var configuration = AgentConfiguration(model: model, apiKey: key, reasoningEffort: reasoning, autoUpgrade: routing == "auto", frontierModel: "gpt-6-astra")
         let budget = GenerationBudget(maximumRequests: configuration.maximumSteps, timeout: configuration.timeout)
         configuration.runBudget = budget
+        configuration.references = referenceTools(for: request, budget: budget, openAIKey: key)
         let instruments = InstrumentRunResources()
         let downloadStatus: @Sendable (String) -> Void = { [weak self] text in
             Task { @MainActor in if self?.closed == false { self?.generationStatus = text } }
@@ -79,19 +87,25 @@ extension ProjectSession {
         )
         let vocals = try VocalPreferences.makeSession()
         let draftDirectory = cacheURL.appendingPathComponent("VocalDraft-\(UUID())", isDirectory: true)
-        defer { try? FileManager.default.removeItem(at: draftDirectory) }
+        let referenceDirectory = cacheURL.appendingPathComponent("ReferenceDraft-\(budget.runID)", isDirectory: true)
+        defer {
+            try? FileManager.default.removeItem(at: draftDirectory)
+            try? FileManager.default.removeItem(at: referenceDirectory)
+        }
         for attempt in 0...1 {
             try await budget.check()
             guard let conversation = file.conversations.first(where: { $0.id == request.conversationID }) else { return }
             var context = conversation
             if let cutoff = context.messages.firstIndex(where: { $0.id == request.messageID }) { context.messages = Array(context.messages.prefix(through: cutoff)) }
             let snapshot = file.song; let assets = assetURLs; let cache = cacheURL
+            let references = configuration.references
             generationStatus = attempt == 0 ? "Composing…" : "Updating for your latest edits…"
             let result = try await agent.generate(
                 song: snapshot, conversation: context, selection: request.selection, configuration: configuration, vocals: vocals,
                 preview: { song, fromBeat, lengthBeats in
                     try Task.checkCancellation()
                     var previewAssets = assets
+                    if let references { previewAssets.merge(await references.assets(song)) { _, new in new } }
                     if let vocals {
                         let generated = await vocals.assets(for: song)
                         if !generated.isEmpty { try FileManager.default.createDirectory(at: draftDirectory, withIntermediateDirectories: true) }
@@ -137,19 +151,42 @@ extension ProjectSession {
             record.transientRetries = usage.retries
             // Stage every payload before touching the document. A disk failure
             // or cancellation leaves both musical state and saved assets intact.
-            var staged: [UUID: URL] = [:]
-            var stagedWaveforms: [UUID: [Float]] = [:]
+            let stagingDirectory = cache.appendingPathComponent("Generated-\(UUID())", isDirectory: true)
+            guard let blobStore = document.blobStore else { throw ProjectError("The project audio store is unavailable.") }
+            let previousBlobIDs = Set(blobStore.snapshot().urls.keys)
+            let newAssets = result.song.assets.filter { asset in !snapshot.assets.contains(where: { $0.id == asset.id }) }
             var installed = false
             defer {
+                try? FileManager.default.removeItem(at: stagingDirectory)
                 if !installed {
-                    for url in staged.values { try? FileManager.default.removeItem(at: url) }
+                    try? blobStore.discardUnpublished(ids: Set(newAssets.map(\.id)).subtracting(previousBlobIDs))
                 }
             }
-            for asset in result.song.assets where !snapshot.assets.contains(where: { $0.id == asset.id }) {
-                guard let data = result.generatedAssets[asset.id], !data.isEmpty else { throw ProjectError("Generated audio data is missing. The song was not changed.") }
-                let url = cache.appendingPathComponent("\(asset.id)-Generated.wav")
-                try data.write(to: url, options: .atomic); staged[asset.id] = url
-                if let source = try? AVAudioFile(forReading: url) { stagedWaveforms[asset.id] = Self.waveform(file: source) }
+            let prepared = try await referenceWork { () -> ([UUID: URL], [UUID: [Float]]) in
+                try FileManager.default.createDirectory(at: stagingDirectory, withIntermediateDirectories: true)
+                var files: [UUID: URL] = [:], waveforms: [UUID: [Float]] = [:]
+                for asset in newAssets {
+                    try Task.checkCancellation()
+                    let url = stagingDirectory.appendingPathComponent("\(asset.id).wav")
+                    if let file = result.generatedFiles[asset.id] { try FileManager.default.copyItem(at: file, to: url) }
+                    else if let data = result.generatedAssets[asset.id], !data.isEmpty { try data.write(to: url, options: .atomic) }
+                    else { throw ProjectError("Generated audio data is missing. The song was not changed.") }
+                    files[asset.id] = url
+                    if let source = try? AVAudioFile(forReading: url) { waveforms[asset.id] = Self.waveform(file: source) }
+                }
+                try Task.checkCancellation()
+                return (files, waveforms)
+            }
+            let staged = prepared.0, stagedWaveforms = prepared.1
+            if references != nil {
+                try validateReferenceStorage(adding: staged)
+                let renderAssets = assets.merging(staged) { _, new in new }
+                _ = try await referenceWork { try AudioMemoryPreflight.validate(song: result.song, assets: renderAssets) }
+            }
+            let adopted = try await referenceWork { () -> [UUID: URL] in
+                var files: [UUID: URL] = [:]
+                for (id, url) in staged { try Task.checkCancellation(); files[id] = try blobStore.insert(file: url, id: id) }
+                return files
             }
             try await budget.check()
             // The budget read yields. Recheck after all preparation, with no
@@ -159,18 +196,25 @@ extension ProjectSession {
                 if attempt == 0 { continue }
                 throw ProjectError("The song changed again while composing. Your edits are safe; send the prompt again when ready.")
             }
-            for (id, url) in staged {
-                assetData[id] = result.generatedAssets[id]; assetURLs[id] = url
+            if references != nil { try validateReferenceStorage(adding: adopted) }
+            var completed = file
+            completed.song = analysisSong
+            completed.generations.append(record)
+            if let index = completed.conversations.firstIndex(where: { $0.id == request.conversationID }) {
+                completed.conversations[index].responseItems = result.responseItems
+                completed.conversations[index].responseModel = result.model
+                completed.conversations[index].messages.append(ChatMessage(role: "assistant", text: result.summary + (result.routingReason.map { "\n\nModel upgrade: \($0)" } ?? ""), runID: result.runID))
+            }
+            try ProjectArchive.validateMetadata(completed)
+            document.publishInstalledBlobs()
+            for (id, _) in staged {
+                assetURLs[id] = adopted[id]
+                if result.song.assets.first(where: { $0.id == id })?.referenceDerivation != nil { retainedReferenceIDs.insert(id) }
                 if let waveform = stagedWaveforms[id] { waveforms[id] = waveform }
             }
             installed = true
-            file.generations.append(record)
-            if let index = file.conversations.firstIndex(where: { $0.id == request.conversationID }) {
-                file.conversations[index].responseItems = result.responseItems
-                file.conversations[index].responseModel = result.model
-                file.conversations[index].messages.append(ChatMessage(role: "assistant", text: result.summary + (result.routingReason.map { "\n\nModel upgrade: \($0)" } ?? ""), runID: result.runID))
-            }
-            if hasChanges { commit(result.song, replacing: snapshot, name: "AI: \(String(record.summary.prefix(40)))", generationID: record.id) }
+            if hasChanges { commit(result.song, replacing: snapshot, name: "AI: \(String(record.summary.prefix(40)))", generationID: record.id, project: completed) }
+            else { file = completed }
             if selection.trackID == nil, let first = file.song.tracks.first { select(track: first.id, clip: first.clips.first?.id) }
             generationStatus = "Analyzing applied changes…"
             await analyzeAppliedDraft(runID: record.id, before: snapshot, after: analysisSong, selection: request.selection,
@@ -180,6 +224,9 @@ extension ProjectSession {
     }
     func appendAssistant(_ text: String, conversationID: UUID) {
         guard let index = file.conversations.firstIndex(where: { $0.id == conversationID }) else { return }
-        file.conversations[index].messages.append(ChatMessage(role: "assistant", text: text))
+        var updated = file
+        updated.conversations[index].messages.append(ChatMessage(role: "assistant", text: text))
+        if (try? ProjectArchive.validateMetadata(updated)) != nil { file = updated }
+        else { errorMessage = text }
     }
 }

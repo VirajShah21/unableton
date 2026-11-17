@@ -24,6 +24,10 @@ public struct Clip: Codable, Sendable, Identifiable, Equatable {
     public var assetID: UUID?
     public var sourceOffsetSeconds: Double
     public var transcriptionAssetID: UUID? = nil
+    public var referenceAttachmentID: UUID? = nil
+    public var referenceReconstruction: ReferenceReconstructionProvenance? = nil
+    public var fadeInBeats: Double? = nil
+    public var fadeOutBeats: Double? = nil
     public init(id: UUID = UUID(), name: String = "Clip", kind: ClipKind = .notes, startBeat: Double = 0, lengthBeats: Double = 16, notes: [NoteEvent] = [], assetID: UUID? = nil, sourceOffsetSeconds: Double = 0) {
         self.id = id; self.name = name; self.kind = kind; self.startBeat = startBeat; self.lengthBeats = lengthBeats
         self.notes = notes; self.assetID = assetID; self.sourceOffsetSeconds = sourceOffsetSeconds
@@ -58,6 +62,7 @@ public struct AudioAsset: Codable, Sendable, Identifiable, Equatable {
     public var channels: Int
     public var vocalTake: VocalTake?
     public var transcriptionTake: TranscriptionTake?
+    public var referenceDerivation: ReferenceAudioDerivation? = nil
     public init(id: UUID = UUID(), fileName: String, duration: Double, sampleRate: Double, channels: Int, vocalTake: VocalTake? = nil, transcriptionTake: TranscriptionTake? = nil) {
         self.id = id; self.fileName = fileName; self.duration = duration; self.sampleRate = sampleRate; self.channels = channels
         self.vocalTake = vocalTake
@@ -92,16 +97,25 @@ public struct ChatMessage: Codable, Sendable, Identifiable, Equatable {
     public var text: String
     public var date: Date = Date()
     public var runID: UUID?
-    public init(role: String, text: String, runID: UUID? = nil) { self.role = role; self.text = text; self.runID = runID }
+    public var attachmentIDs: [UUID]?
+    public init(role: String, text: String, runID: UUID? = nil, attachmentIDs: [UUID]? = nil) {
+        self.role = role; self.text = text; self.runID = runID; self.attachmentIDs = attachmentIDs
+    }
 }
 public struct Conversation: Codable, Sendable, Identifiable, Equatable {
     public var id: UUID = UUID()
     public var title: String = "New chat"
     public var messages: [ChatMessage] = []
+    public var draftAttachmentIDs: [UUID]?
     /// Canonical Responses items, including opaque continuation data. Never a source of current song truth.
     public var responseItems: [JSONValue] = []
     public var responseModel: String?
-    public init(title: String = "New chat") { self.title = title }
+    public init(title: String = "New chat") {
+        self.title = title; self.draftAttachmentIDs = nil
+    }
+    public init(title: String = "New chat", draftAttachmentIDs: [UUID]?) {
+        self.title = title; self.draftAttachmentIDs = draftAttachmentIDs
+    }
 }
 public struct GenerationRecord: Codable, Sendable, Identifiable, Equatable {
     public var id: UUID
@@ -131,6 +145,7 @@ public struct ProjectFile: Codable, Sendable, Equatable {
     public var song: Song = Song()
     public var conversations: [Conversation] = [Conversation()]
     public var generations: [GenerationRecord] = []
+    public var attachments: [SongAttachment]? = nil
     public init() {}
 }
 public struct ProjectSelection: Codable, Sendable, Equatable {

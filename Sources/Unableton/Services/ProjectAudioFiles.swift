@@ -35,7 +35,7 @@ extension ProjectSession {
         commands.append(ProjectCommand(op: .addClip, trackID: target, clip: clip, asset: asset))
         var draft = file.song
         try ProjectEditor.apply(commands, to: &draft)
-        assetData[asset.id] = data; assetURLs[asset.id] = destination
+        _ = try document.install(data: data, id: asset.id); assetURLs[asset.id] = destination
         waveforms[asset.id] = Self.waveform(file: source)
         commit(draft, replacing: file.song, name: recorded == nil ? "Import Audio" : "Record Audio")
         select(track: target, clip: clip.id)
@@ -46,6 +46,7 @@ extension ProjectSession {
         file.framePosition = 0
         var frame: Int64 = 0
         while frame < file.length {
+            if Task.isCancelled { return [] }
             do { try file.read(into: buffer, frameCount: 4096) } catch { break }
             guard buffer.frameLength > 0, let channels = buffer.floatChannelData else { break }
             for i in 0..<Int(buffer.frameLength) {

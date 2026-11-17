@@ -116,6 +116,36 @@ struct RenderingTests {
         }
     }
 
+    @Test func samplerDriveAppliesToCatalogBanksRegardlessOfIdentifierPrefix() throws {
+        let directory = try temporaryDirectory(); defer { try? FileManager.default.removeItem(at: directory) }
+        let bank = directory.appendingPathComponent("fixture.sf2")
+        try SoundFontFixture.write(to: bank)
+        let ids = ["sampled.piano", "freepats.synthbasslead"]
+        let resources = InstrumentResources(urls: Dictionary(uniqueKeysWithValues: ids.map { ($0, bank) }))
+        var rendered: [String: [Float]] = [:]
+        for id in ids {
+            for drive in [0.0, 1.0] {
+                var sampled = song()
+                sampled.tracks[0].instrumentID = id
+                sampled.tracks[0].parameters = ["cutoff": 20_000, "drive": drive, "reverb": 0, "delay": 0]
+                let key = "\(id)-\(drive)"
+                let output = directory.appendingPathComponent(key + ".wav")
+                let report = try OfflineRenderer.render(song: sampled, assets: [:], to: output, resources: resources)
+                #expect(!report.silent && report.clippedSamples == 0)
+                rendered[key] = try read(output)
+            }
+        }
+        func difference(_ lhs: String, _ rhs: String) throws -> Double {
+            let a = try #require(rendered[lhs]), b = try #require(rendered[rhs])
+            #expect(a.count == b.count)
+            return zip(a, b).reduce(0.0) { $0 + abs(Double($1.0) - Double($1.1)) } / Double(a.count)
+        }
+        #expect(try difference("freepats.synthbasslead-0.0", "freepats.synthbasslead-1.0") > 0.0001)
+        #expect(try difference("sampled.piano-0.0", "sampled.piano-1.0") > 0.0001)
+        // The fixture is identical. A label must not decide whether its drive works.
+        #expect(try difference("sampled.piano-1.0", "freepats.synthbasslead-1.0") < 0.00001)
+    }
+
     @Test func missingSoundPreflightReportsAllAudibleDependenciesTogether() throws {
         var missing = song()
         missing.tracks[0].instrumentID = "sampled.piano"
@@ -282,5 +312,41 @@ struct RenderingTests {
         song.tracks[0].volume = 1.5
         let boosted = try OfflineRenderer.render(song: song, assets: [:], to: directory.appendingPathComponent("boosted.wav"))
         #expect(abs(boosted.peak / unity.peak - 1.5) < 0.01)
+    }
+
+    @Test func trackVolumeAndPanSurviveGraphInitializationForSynthAndAudio() throws {
+        let directory = try temporaryDirectory(); defer { try? FileManager.default.removeItem(at: directory) }
+        let sourceURL = directory.appendingPathComponent("source.wav")
+        var sourceSong = song(); sourceSong.tracks[0].volume = 1
+        _ = try OfflineRenderer.render(song: sourceSong, assets: [:], to: sourceURL)
+        let metadata = try ReferenceAudioProcessor.inspectDerived(url: sourceURL)
+        let asset = AudioAsset(fileName: "source.wav", duration: metadata.duration, sampleRate: metadata.sampleRate, channels: metadata.channels)
+        var audioSong = Song(); audioSong.tempo = 120; audioSong.lengthBars = 1; audioSong.assets = [asset]
+        audioSong.tracks = [Track(kind: .audio, volume: 1, parameters: ["cutoff": 20_000, "delay": 0, "reverb": 0],
+            clips: [Clip(kind: .audio, lengthBeats: 4, assetID: asset.id)])]
+        for (kind, base, assets) in [("synth", sourceSong, [UUID: URL]()), ("audio", audioSong, [asset.id: sourceURL])] {
+            var draft = base
+            let unity = try OfflineRenderer.render(song: draft, assets: assets, to: directory.appendingPathComponent("\(kind)-unity.wav"), lengthBeats: 4)
+            for gain in [0.0, 0.3, 0.4] {
+                draft.tracks[0].volume = gain
+                let report = try OfflineRenderer.render(song: draft, assets: assets, to: directory.appendingPathComponent("\(kind)-\(gain).wav"), lengthBeats: 4)
+                #expect(abs(report.rms / unity.rms - gain) < 0.002)
+                #expect(gain != 0 || report.silent)
+            }
+            draft.tracks[0].volume = 0.4; draft.tracks[0].pan = -1
+            let panned = directory.appendingPathComponent("\(kind)-left.wav")
+            _ = try OfflineRenderer.render(song: draft, assets: assets, to: panned, lengthBeats: 4)
+            let file = try AVAudioFile(forReading: panned)
+            let buffer = try #require(AVAudioPCMBuffer(pcmFormat: file.processingFormat, frameCapacity: AVAudioFrameCount(file.length)))
+            try file.read(into: buffer)
+            let values = try #require(buffer.floatChannelData)
+            var left = 0.0, right = 0.0
+            for frame in 0..<Int(buffer.frameLength) {
+                left += Double(values[0][frame] * values[0][frame])
+                right += Double(values[1][frame] * values[1][frame])
+            }
+            #expect(left > 0.0001)
+            #expect(right < left * 0.0001)
+        }
     }
 }

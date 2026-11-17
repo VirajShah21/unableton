@@ -74,6 +74,7 @@ struct ClipEditorView: View {
                 }
                 InspectionValue("Source", value: asset.fileName)
                 InspectionValue("Recording", value: "\(asset.duration.formatted(.number.precision(.fractionLength(1)))) s · \(Int(asset.sampleRate)) Hz · \(asset.channels) ch")
+                if let derivation = asset.referenceDerivation { ReferenceAudioSourceView(session: session, derivation: derivation) }
             }
             Text("Audio clips keep their original playback speed when the song tempo changes.").font(.caption).foregroundStyle(.secondary)
         }.formStyle(.grouped).textSelection(.enabled)

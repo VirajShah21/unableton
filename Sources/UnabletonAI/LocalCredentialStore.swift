@@ -6,7 +6,9 @@ import Darwin
 final class LocalCredentialStore: @unchecked Sendable {
     let url: URL
     private let lock = NSLock()
-    private let providers: Set<String> = ["openai", "rinoa", "audial", "typesafe"]
+    // Preserve keys from the earlier reference-processing provider so reading
+    // an existing store still works. No Mureka client or lookup remains.
+    private let providers: Set<String> = ["openai", "rinoa", "audial", "typesafe", "mureka"]
     private let maximumBytes = 64 * 1024
 
     init(url: URL) { self.url = url }

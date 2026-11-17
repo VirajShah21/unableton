@@ -11,6 +11,7 @@ public struct AgentConfiguration: Sendable, Equatable {
     public var frontierModel: String
     public var runBudget: GenerationBudget?
     public var instruments: InstrumentDependencies?
+    public var references: ReferenceTools? = nil
     public init(model: String? = nil, apiKey: String, reasoningEffort: String = "low", maximumSteps: Int = 32, timeout: TimeInterval = 300, autoUpgrade: Bool? = nil, frontierModel: String = ModelRouting.frontierModel, runBudget: GenerationBudget? = nil, instruments: InstrumentDependencies? = nil) {
         self.model = model ?? ModelRouting.economicalModel; self.apiKey = apiKey; self.reasoningEffort = reasoningEffort
         self.maximumSteps = maximumSteps; self.timeout = timeout
@@ -35,6 +36,7 @@ public struct PreviewReport: Sendable {
 public struct AgentResult: Sendable {
     public var song: Song
     public var generatedAssets: [UUID: Data]
+    public var generatedFiles: [UUID: URL] = [:]
     public var summary: String
     public var model: String
     public var inputTokens: Int
@@ -43,8 +45,9 @@ public struct AgentResult: Sendable {
     public var runID: UUID
     public var routingReason: String? = nil
     public var attemptedModels: [String] = []
-    public init(song: Song, summary: String, model: String, inputTokens: Int, outputTokens: Int, responseItems: [JSONValue], runID: UUID, routingReason: String? = nil, attemptedModels: [String] = [], generatedAssets: [UUID: Data] = [:]) {
+    public init(song: Song, summary: String, model: String, inputTokens: Int, outputTokens: Int, responseItems: [JSONValue], runID: UUID, routingReason: String? = nil, attemptedModels: [String] = [], generatedAssets: [UUID: Data] = [:], generatedFiles: [UUID: URL] = [:]) {
         self.generatedAssets = generatedAssets
+        self.generatedFiles = generatedFiles
         self.song = song; self.summary = summary; self.model = model; self.inputTokens = inputTokens; self.outputTokens = outputTokens
         self.responseItems = responseItems; self.runID = runID; self.routingReason = routingReason; self.attemptedModels = attemptedModels
     }

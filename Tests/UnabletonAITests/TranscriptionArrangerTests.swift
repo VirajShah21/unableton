@@ -22,6 +22,13 @@ private actor TranscriptionTransport: ResponsesTransport {
 
 private let transcriptionConfiguration = AgentConfiguration(model: "fixture-model", apiKey: "fixture-key")
 
+private final class ArrangementTestClock: @unchecked Sendable {
+    private let lock = NSLock()
+    private var time: TimeInterval = 0
+    func now() -> TimeInterval { lock.lock(); defer { lock.unlock() }; return time }
+    func expire() { lock.lock(); defer { lock.unlock() }; time = 2 }
+}
+
 private func arrangementRequest(timing: TranscriptionTiming = .preserve) -> TranscriptionArrangementRequest {
     let transcript = PerformanceTranscript(mode: .humming, events: [
         TranscribedEvent(pitch: 60, startSeconds: 0.1, durationSeconds: 0.4, velocity: 0.8, confidence: 0.95),
@@ -306,10 +313,20 @@ struct TranscriptionArrangerTests {
         #expect(await transport.captured().count == 1)
 
         let timedTransport = TranscriptionTransport([.wait])
-        var configuration = transcriptionConfiguration; configuration.timeout = 0.03
+        let clock = ArrangementTestClock()
+        var configuration = transcriptionConfiguration
+        configuration.runBudget = GenerationBudget(timeout: 1, now: { clock.now() })
         let start = ContinuousClock.now
+        let timedTask = Task { try await TranscriptionArranger(transport: timedTransport).arrange(request: request, configuration: configuration) }
+        defer { timedTask.cancel() }
+        let requestDeadline = ContinuousClock.now + .seconds(2)
+        while await timedTransport.captured().isEmpty, ContinuousClock.now < requestDeadline { try await Task.sleep(for: .milliseconds(5)) }
+        try #require(await timedTransport.captured().count == 1)
+        // Expire only after the request starts. A 30 ms wall deadline can
+        // expire during preflight when audio-render suites compete for CPU.
+        clock.expire()
         do {
-            _ = try await TranscriptionArranger(transport: timedTransport).arrange(request: request, configuration: configuration)
+            _ = try await timedTask.value
             Issue.record("Expected timeout")
         } catch let error as AgentError {
             if case .limit = error {} else { Issue.record("Unexpected timeout error: \(error)") }

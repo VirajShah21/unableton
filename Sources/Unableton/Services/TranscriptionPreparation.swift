@@ -153,7 +153,7 @@ extension TranscriptionSession {
                     var additions = after; additions.tracks.removeAll { track in before.tracks.contains { $0.id == track.id } }
                     try InstrumentResources.validatePlayback(in: additions)
                     // Bytes are ready and all commands validated before the first document mutation.
-                    project.assetData[prepared.asset.id] = data
+                    _ = try project.document.install(data: data, id: prepared.asset.id)
                     project.assetURLs[prepared.asset.id] = take.url
                     var generationID: UUID?
                     if let result = prepared.result {
