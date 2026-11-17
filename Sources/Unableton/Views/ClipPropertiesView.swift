@@ -7,6 +7,7 @@ struct ClipPropertiesView: View {
     var body: some View {
         Form {
             Section("Clip") {
+                if let id = clip.referenceAttachmentID, let attachment = session.attachment(id) { InspectionValue("Source song", value: attachment.fileName) }
                 if session.canEditMusic {
                 EditableNumber(label: "Start beat", value: clip.startBeat + 1, range: 1...200_000) { value in
                     session.perform([ProjectCommand(op: .moveClip, clipID: clip.id, startBeat: value - 1)], name: "Move Clip")
@@ -25,6 +26,21 @@ struct ClipPropertiesView: View {
                 } else {
                     InspectionValue("Start beat", value: (clip.startBeat + 1).formatted())
                     InspectionValue("Length in beats", value: clip.lengthBeats.formatted())
+                }
+            }
+            if clip.kind == .audio {
+                Section("Audio Fades") {
+                    if session.canEditMusic {
+                        EditableNumber(label: "Fade in beats", value: clip.fadeInBeats ?? 0, range: 0...max(0, clip.lengthBeats - (clip.fadeOutBeats ?? 0))) { value in
+                            session.perform([ProjectCommand(op: .setClipFades, clipID: clip.id, startBeat: value, lengthBeats: clip.fadeOutBeats ?? 0)], name: "Change Audio Fades")
+                        }
+                        EditableNumber(label: "Fade out beats", value: clip.fadeOutBeats ?? 0, range: 0...max(0, clip.lengthBeats - (clip.fadeInBeats ?? 0))) { value in
+                            session.perform([ProjectCommand(op: .setClipFades, clipID: clip.id, startBeat: clip.fadeInBeats ?? 0, lengthBeats: value)], name: "Change Audio Fades")
+                        }
+                    } else {
+                        InspectionValue("Fade in beats", value: (clip.fadeInBeats ?? 0).formatted())
+                        InspectionValue("Fade out beats", value: (clip.fadeOutBeats ?? 0).formatted())
+                    }
                 }
             }
             Section("Loop") {
@@ -47,7 +63,7 @@ struct ClipPropertiesView: View {
                     InspectionValue("Length in beats", value: (session.file.song.loopEnd - session.file.song.loopStart).formatted())
                 }
             }
-        }.formStyle(.grouped).padding(4).frame(width: 350, height: 340).textSelection(.enabled)
+        }.formStyle(.grouped).padding(4).frame(width: 350, height: clip.kind == .audio ? 440 : 340).textSelection(.enabled)
     }
     private var playheadInside: Bool { session.audio.currentBeat > clip.startBeat && session.audio.currentBeat < clip.startBeat + clip.lengthBeats }
     private func setLoop(start: Double? = nil, length: Double? = nil, enabled: Bool? = nil) {

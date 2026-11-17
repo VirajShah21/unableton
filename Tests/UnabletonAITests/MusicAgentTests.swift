@@ -3,6 +3,13 @@ import Testing
 import UnabletonCore
 @testable import UnabletonAI
 
+private final class MusicAgentTestClock: @unchecked Sendable {
+    private let lock = NSLock()
+    private var time: TimeInterval = 0
+    func now() -> TimeInterval { lock.withLock { time } }
+    func advance(_ interval: TimeInterval) { lock.withLock { time += interval } }
+}
+
 private actor MockTransport: ResponsesTransport {
     enum Step: Sendable { case response(JSONValue), failure(AgentError), wait }
     private var steps: [Step]
@@ -64,10 +71,11 @@ struct MusicAgentTests {
 
     @Test func revisionReplanDoesNotRestartTheDeadline() async throws {
         let transport = MockTransport([.response(response([answer()])), .wait])
-        var config = configuration; config.runBudget = GenerationBudget(timeout: 0.1)
+        let clock = MusicAgentTestClock()
+        var config = configuration; config.runBudget = GenerationBudget(timeout: 0.1, now: { clock.now() })
         let agent = MusicAgent(transport: transport)
         _ = try await agent.generate(song: Song(), conversation: conversation(), selection: .init(), configuration: config)
-        try await Task.sleep(for: .milliseconds(150))
+        clock.advance(0.15)
         await #expect(throws: AgentError.self) {
             _ = try await agent.generate(song: Song(), conversation: conversation(), selection: .init(), configuration: config)
         }
@@ -581,12 +589,16 @@ struct InstrumentDependencyTests {
             .response(response([try tool("apply_edits", addTrack(track))])),
             .response(response([answer()]))
         ])
-        let budget = GenerationBudget(timeout: 0.1)
+        let clock = MusicAgentTestClock()
+        let budget = GenerationBudget(timeout: 0.1, now: { clock.now() })
         let requests = InstrumentRequests()
         var config = configuration; config.runBudget = budget
         config.instruments = InstrumentDependencies(installed: { ["sampled.piano"] }, ensure: { ids in
             await requests.record(ids)
-            try await budget.withDependencyWait { try await Task.sleep(for: .milliseconds(150)) }
+            try await budget.withDependencyWait {
+                clock.advance(1)
+                try await Task.sleep(for: .milliseconds(150))
+            }
         })
         let result = try await MusicAgent(transport: transport).generate(song: Song(), conversation: conversation(), selection: .init(), configuration: config)
         #expect(result.song.tracks.count == 1)

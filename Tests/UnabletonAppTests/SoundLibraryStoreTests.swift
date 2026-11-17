@@ -6,13 +6,29 @@ import UnabletonCore
 import UnabletonLibrary
 @testable import Unableton
 
+private actor StoreFixtureGate {
+    private var released = false
+    private var waiters: [CheckedContinuation<Void, Never>] = []
+    func wait() async {
+        guard !released else { return }
+        await withCheckedContinuation { waiters.append($0) }
+    }
+    func release() {
+        released = true
+        let pending = waiters; waiters.removeAll()
+        for waiter in pending { waiter.resume() }
+    }
+}
+
 private actor StoreFixtureDownloader: SoundBankDownloading {
     let bytes: Data
     let delay: Duration
+    let gate: StoreFixtureGate?
     private(set) var calls = 0
-    init(_ bytes: Data, delay: Duration = .zero) { self.bytes = bytes; self.delay = delay }
+    init(_ bytes: Data, delay: Duration = .zero, gate: StoreFixtureGate? = nil) { self.bytes = bytes; self.delay = delay; self.gate = gate }
     func download(_ bank: SoundBank, to destination: URL, progress: @escaping @Sendable (Int64, Int64) -> Void) async throws {
         calls += 1
+        if let gate { await gate.wait() }
         try await Task.sleep(for: delay)
         try bytes.write(to: destination)
         progress(Int64(bytes.count), Int64(bytes.count))
@@ -52,12 +68,13 @@ struct SoundLibraryStoreTests {
         let root = FileManager.default.temporaryDirectory.appendingPathComponent("SoundStore-\(UUID())")
         let suite = "SoundStoreTests.\(UUID())", preferences = UserDefaults(suiteName: suite)!
         defer { try? FileManager.default.removeItem(at: root); preferences.removePersistentDomain(forName: suite) }
-        let downloader = StoreFixtureDownloader(archive, delay: .milliseconds(100))
+        let gate = StoreFixtureGate(), downloader = StoreFixtureDownloader(archive, gate: gate)
         let service = library(root, downloader: downloader), store = SoundLibraryStore(library: service, preferences: preferences)
         let operation = Task { try await store.resourcesForExplicitUse(for: ["sampled.piano"]) }
         try await waitUntil { store.activeDownloadCount == 1 }
         #expect(store.activities["piano"]?.requiredByOtherOperations == true)
         #expect(store.activities["piano"]?.libraryRequested == false)
+        await gate.release()
         let resources = try await operation.value
         #expect(resources.urls["sampled.piano"] != nil)
         #expect(!preferences.bool(forKey: SoundLibraryStore.automaticPreference))

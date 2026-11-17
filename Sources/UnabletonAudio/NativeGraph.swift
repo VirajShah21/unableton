@@ -2,6 +2,13 @@ import Foundation
 @preconcurrency import AVFAudio
 import UnabletonCore
 import UnabletonDSP
+import AudioToolbox
+
+struct ClipAudioEnvelope {
+    var fadeInBeats: Double
+    var fadeOutBeats: Double
+    var endBeat: Double
+}
 
 final class NativeTimeline: @unchecked Sendable {
     let pointer: OpaquePointer
@@ -21,14 +28,18 @@ final class NativeTrack: @unchecked Sendable {
 }
 final class NativeSample {
     let pointer: OpaquePointer
-    init(url: URL) throws {
+    let sourceStartSeconds: Double
+    init(url: URL, range: AudioSourceRange) throws {
         let file = try AVAudioFile(forReading: url, commonFormat: .pcmFormatFloat32, interleaved: false)
-        guard file.length > 0, file.length <= 64_000_000,
-              let buffer = AVAudioPCMBuffer(pcmFormat: file.processingFormat, frameCapacity: AVAudioFrameCount(file.length)) else {
+        let frames = AudioMemoryPreflight.frameRange(file: file, range: range)
+        guard !frames.isEmpty, frames.count <= 64_000_000,
+              let buffer = AVAudioPCMBuffer(pcmFormat: file.processingFormat, frameCapacity: AVAudioFrameCount(frames.count)) else {
             throw AudioError.unreadableAudio("Audio must contain samples and be shorter than 64 million frames. Split longer recordings before importing.")
         }
+        file.framePosition = AVAudioFramePosition(frames.lowerBound)
         try file.read(into: buffer)
         guard let data = buffer.floatChannelData else { throw AudioError.unreadableAudio("Could not decode \(url.lastPathComponent).") }
+        sourceStartSeconds = Double(frames.lowerBound) / file.processingFormat.sampleRate
         pointer = ub_sample_create(data[0], data[buffer.format.channelCount > 1 ? 1 : 0], UInt64(buffer.frameLength), buffer.format.sampleRate)!
     }
     deinit { ub_sample_destroy(pointer) }
@@ -42,6 +53,8 @@ final class NativeGraph {
     let format = AVAudioFormat(standardFormatWithSampleRate: 48_000, channels: 2)!
     private var scheduler: OpaquePointer?
     private var samples: [UUID: NativeSample] = [:]
+    private let sampleRanges: [UUID: AudioSourceRange]
+    private let audioEnvelopes: [UUID: ClipAudioEnvelope]
     private var nodes: [AVAudioNode] = []
     private let resources: InstrumentResources
 
@@ -55,12 +68,15 @@ final class NativeGraph {
         return graph
     }
 
-    init(song: Song, assets: [UUID: URL], fromBeat: Double = 0, looping: Bool = false, includeMetronome: Bool = false, resources: InstrumentResources = .empty) throws {
+    init(song: Song, assets: [UUID: URL], fromBeat: Double = 0, looping: Bool = false, includeMetronome: Bool = false, resources: InstrumentResources = .empty, audioEnvelopes: [UUID: ClipAudioEnvelope] = [:]) throws {
         self.resources = resources
+        self.audioEnvelopes = audioEnvelopes
         let missing = InstrumentResources.requiredIDs(in: song).filter { InstrumentCatalog.preset(id: $0)?.isSampler == true && resources.urls[$0] == nil }
         if !missing.isEmpty { throw MissingInstruments(missing) }
         try ProjectEditor.validate(song)
         try InstrumentResources.validatePlayback(in: song)
+        try AudioMemoryPreflight.validate(song: song, assets: assets)
+        sampleRanges = AudioMemoryPreflight.sourceRanges(song: song)
         guard song.tempo.isFinite, song.tempo > 0, fromBeat.isFinite, fromBeat >= 0 else { throw AudioError.invalidSong("The tempo and playback position must be valid.") }
         timeline = NativeTimeline(song: song, fromBeat: fromBeat, looping: looping)
         tempo = song.tempo
@@ -91,6 +107,7 @@ final class NativeGraph {
 
     private func add(track: Track, assets: [UUID: URL]) throws {
         let parameters = track.effectiveParameters
+        let usesSampler = track.kind == .instrument && InstrumentCatalog.preset(id: track.instrumentID)?.isSampler == true
         let events = try Self.events(for: track, tempo: tempo)
         if track.instrumentID == "sampled.bass", events.contains(where: { $0.on == 1 && !(26...45).contains(Int($0.pitch)) }) {
             throw AudioError.invalidSong("Bass guitar supports MIDI notes 26–45. Move its notes into that range or choose a synthesizer bass.")
@@ -119,8 +136,13 @@ final class NativeGraph {
             let native = NativeTrack(timeline: timeline, parameters: p, events: track.kind == .instrument ? events : [])
             for clip in track.clips where clip.kind == .audio {
                 guard let id = clip.assetID, let url = assets[id] else { throw AudioError.missingAsset(clip.assetID ?? UUID()) }
-                if samples[id] == nil { samples[id] = try NativeSample(url: url) }
-                ub_track_add_audio(native.pointer, samples[id]!.pointer, frame(clip.startBeat), frame(clip.startBeat + clip.lengthBeats), clip.sourceOffsetSeconds)
+                guard let range = sampleRanges[id] else { throw AudioError.missingAsset(id) }
+                if samples[id] == nil { samples[id] = try NativeSample(url: url, range: range) }
+                let sample = samples[id]!
+                let envelope = audioEnvelopes[clip.id] ?? ClipAudioEnvelope(fadeInBeats: clip.fadeInBeats ?? 0,
+                    fadeOutBeats: clip.fadeOutBeats ?? 0, endBeat: clip.startBeat + clip.lengthBeats)
+                ub_track_add_audio_envelope(native.pointer, sample.pointer, frame(clip.startBeat), frame(clip.startBeat + clip.lengthBeats),
+                    clip.sourceOffsetSeconds - sample.sourceStartSeconds, frame(envelope.fadeInBeats), frame(envelope.fadeOutBeats), frame(envelope.endBeat))
             }
             let node = AVAudioSourceNode(format: format) { _, time, count, output in
                 let buffers = UnsafeMutableAudioBufferListPointer(output)
@@ -133,15 +155,13 @@ final class NativeGraph {
         }
         nodes.append(source)
         let mixer = AVAudioMixerNode()
-        mixer.outputVolume = Float(min(1, max(0, track.volume)))
-        mixer.pan = Float(min(1, max(-1, track.pan)))
         var previous = source
         let eq = AVAudioUnitEQ(numberOfBands: 1)
         eq.bands[0].filterType = .lowPass; eq.bands[0].frequency = Float(parameters["cutoff", default: 6000]); eq.bands[0].bypass = false
         let delay = AVAudioUnitDelay(); delay.delayTime = 60 / tempo * 0.5; delay.feedback = 26; delay.wetDryMix = Float(parameters["delay", default: 0] * 45)
         let reverb = AVAudioUnitReverb(); reverb.loadFactoryPreset(.mediumHall); reverb.wetDryMix = Float(parameters["reverb", default: 0.12] * 55)
         var effects: [AVAudioNode] = [eq, delay, reverb]
-        if track.instrumentID.hasPrefix("sampled."), parameters["drive", default: 0] > 0 {
+        if usesSampler, parameters["drive", default: 0] > 0 {
             let distortion = AVAudioUnitDistortion(); distortion.loadFactoryPreset(.multiBrokenSpeaker); distortion.wetDryMix = Float(parameters["drive", default: 0] * 35)
             effects.insert(distortion, at: 1)
         }
@@ -156,6 +176,12 @@ final class NativeGraph {
             nodes.append(node); previous = node
         }
         engine.connect(mixer, to: engine.mainMixerNode, format: format)
+        // Attaching/connecting initializes the mixer and resets its controls.
+        // Set the musical state after its graph connections exist.
+        mixer.outputVolume = Float(min(1, max(0, track.volume)))
+        guard let pan = mixer.auAudioUnit.parameterTree?.parameter(withID: kMultiChannelMixerParam_Pan,
+            scope: kAudioUnitScope_Input, element: 0) else { throw AudioError.render("The track's stereo pan is unavailable.") }
+        pan.value = Float(min(1, max(-1, track.pan)))
     }
     private func frame(_ beat: Double) -> Int64 { Int64((beat * 60 / tempo * 48_000).rounded()) }
     private static func events(for track: Track, tempo: Double) throws -> [UBEvent] {

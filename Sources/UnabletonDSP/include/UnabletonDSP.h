@@ -25,6 +25,8 @@ void ub_track_render(UBTrack *track, double sampleTime, uint32_t frames, float *
 UBSample *ub_sample_create(const float *left, const float *right, uint64_t frames, double sampleRate);
 void ub_sample_destroy(UBSample *sample);
 void ub_track_add_audio(UBTrack *track, UBSample *sample, int64_t startFrame, int64_t endFrame, double offsetSeconds);
+void ub_track_add_audio_faded(UBTrack *track, UBSample *sample, int64_t startFrame, int64_t endFrame, double offsetSeconds, int64_t fadeInFrames, int64_t fadeOutFrames);
+void ub_track_add_audio_envelope(UBTrack *track, UBSample *sample, int64_t startFrame, int64_t endFrame, double offsetSeconds, int64_t fadeInFrames, int64_t fadeOutFrames, int64_t envelopeEndFrame);
 UBScheduler *ub_scheduler_create(void *mixerAudioUnit, UBTimeline *timeline);
 int ub_scheduler_add_sampler(UBScheduler *scheduler, void *samplerAudioUnit, const UBEvent *events, uint32_t count);
 void ub_scheduler_destroy(UBScheduler *scheduler);

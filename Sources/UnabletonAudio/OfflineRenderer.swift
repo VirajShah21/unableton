@@ -4,22 +4,31 @@ import UnabletonCore
 
 public enum OfflineRenderer {
     public static func render(song: Song, assets: [UUID: URL], to url: URL, fromBeat: Double = 0, lengthBeats: Double? = nil, resources: InstrumentResources = .empty) throws -> RenderReport {
+        try ProjectEditor.validate(song)
         guard song.tempo.isFinite, song.tempo > 0 else { throw AudioError.invalidSong("The tempo must be positive.") }
         let length = lengthBeats ?? max(0, song.lengthBeats - fromBeat)
         guard length.isFinite, length > 0, fromBeat.isFinite, fromBeat >= 0 else { throw AudioError.render("Select a nonempty range to export.") }
         // Stop source material at the selection end, then render only its release/effect tails.
         let endBeat = fromBeat + length
         var exportSong = song
+        var audioEnvelopes: [UUID: ClipAudioEnvelope] = [:]
         for track in exportSong.tracks.indices {
             exportSong.tracks[track].clips = exportSong.tracks[track].clips.compactMap { clip in
                 guard clip.startBeat < endBeat else { return nil }
                 var trimmed = clip
+                if clip.kind == .audio {
+                    audioEnvelopes[clip.id] = ClipAudioEnvelope(fadeInBeats: clip.fadeInBeats ?? 0,
+                        fadeOutBeats: clip.fadeOutBeats ?? 0, endBeat: clip.startBeat + clip.lengthBeats)
+                    // The schedule stops at the selected end, but its envelope
+                    // retains the full clip's anchors rather than moving the fade.
+                    trimmed.fadeInBeats = nil; trimmed.fadeOutBeats = nil
+                }
                 trimmed.lengthBeats = min(clip.lengthBeats, endBeat - clip.startBeat)
                 trimmed.notes.removeAll { $0.startBeat >= trimmed.lengthBeats }
                 return trimmed
             }
         }
-        let graph = try NativeGraph(song: exportSong, assets: assets, fromBeat: fromBeat, resources: resources)
+        let graph = try NativeGraph(song: exportSong, assets: assets, fromBeat: fromBeat, resources: resources, audioEnvelopes: audioEnvelopes)
         try graph.engine.enableManualRenderingMode(.offline, format: graph.format, maximumFrameCount: 1024)
         let tail = min(10, max(2, song.tracks.map { $0.effectiveParameters["release", default: 0.3] + 2 }.max() ?? 2))
         let duration = length * 60 / song.tempo + tail

@@ -3,7 +3,7 @@ import Foundation
 public enum CommandOperation: String, Codable, CaseIterable, Sendable {
     case addTrack, deleteTrack, duplicateTrack, reorderTrack, renameTrack, setInstrument, setParameter, setMute, setSolo, setArmed
     case addClip, deleteClip, duplicateClip, moveClip, trimClip, splitClip, replaceNotes, addNote, updateNote, deleteNote, transpose, quantize, humanize, repeatClip
-    case addAsset, setTempo, setLength, setKey, setLoop, setMetronome
+    case addAsset, setTempo, setLength, setKey, setLoop, setMetronome, setClipFades
 }
 /// Shared by manual edits and the model. UUIDs are stable across persisted projects and tool calls.
 public struct ProjectCommand: Codable, Sendable, Equatable {
@@ -74,6 +74,10 @@ public enum ProjectEditor {
                 if clip.kind == .audio {
                     guard let id = clip.assetID, let asset = song.assets.first(where: { $0.id == id }), clip.sourceOffsetSeconds < asset.duration else { throw ProjectError("The audio clip references a missing or empty asset.") }
                 }
+                let fadeIn = clip.fadeInBeats ?? 0, fadeOut = clip.fadeOutBeats ?? 0
+                guard fadeIn.isFinite, fadeOut.isFinite, fadeIn >= 0, fadeOut >= 0,
+                      fadeIn + fadeOut <= clip.lengthBeats,
+                      clip.kind == .audio || (fadeIn == 0 && fadeOut == 0) else { throw ProjectError("Audio fades must fit within the clip.") }
                 if let source = clip.transcriptionAssetID {
                     guard song.assets.contains(where: { $0.id == source && $0.transcriptionTake != nil }) else { throw ProjectError("The transcribed clip references a missing source take.") }
                 }
@@ -147,7 +151,9 @@ public enum ProjectEditor {
                 clip.startBeat = start; clip.lengthBeats -= delta
             }
             if let length = c.lengthBeats { clip.lengthBeats = length }
-            clip.notes.removeAll { $0.startBeat >= clip.lengthBeats }; song.tracks[ti].clips[ci] = clip
+            clip.notes.removeAll { $0.startBeat >= clip.lengthBeats }
+            clampFades(&clip)
+            song.tracks[ti].clips[ci] = clip
         case .splitClip:
             let (ti, ci) = try location(), original = song.tracks[ti].clips[ci]
             let cut = try required(c.startBeat, "startBeat") - original.startBeat
@@ -156,8 +162,18 @@ public enum ProjectEditor {
             left.lengthBeats = cut; right.startBeat += cut; right.lengthBeats -= cut
             left.notes = original.notes.compactMap { n in guard n.startBeat < cut else { return nil }; var n = n; n.duration = min(n.duration, cut - n.startBeat); return n }
             right.notes = original.notes.compactMap { n in guard n.startBeat + n.duration > cut else { return nil }; var n = n; n.id = UUID(); let end = n.startBeat + n.duration; n.startBeat = max(0, n.startBeat - cut); n.duration = end - cut - n.startBeat; return n }
-            if original.kind == .audio { right.sourceOffsetSeconds += cut * 60 / song.tempo }
+            if original.kind == .audio {
+                right.sourceOffsetSeconds += cut * 60 / song.tempo
+                // Preserve the external edges; splitting does not add a dip at the cut.
+                left.fadeOutBeats = nil; right.fadeInBeats = nil
+                clampFades(&left); clampFades(&right)
+            }
             song.tracks[ti].clips[ci] = left; song.tracks[ti].clips.insert(right, at: ci + 1)
+        case .setClipFades:
+            let (ti, ci) = try location()
+            guard song.tracks[ti].clips[ci].kind == .audio else { throw ProjectError("Fades apply to audio clips only.") }
+            song.tracks[ti].clips[ci].fadeInBeats = try required(c.startBeat, "startBeat (fade-in beats)")
+            song.tracks[ti].clips[ci].fadeOutBeats = try required(c.lengthBeats, "lengthBeats (fade-out beats)")
         case .replaceNotes:
             let (ti, ci) = try location(); song.tracks[ti].clips[ci].notes = try required(c.notes, "notes")
         case .addNote:
@@ -198,5 +214,11 @@ public enum ProjectEditor {
     }
     private static func copyClip(_ original: Clip) -> Clip {
         var c = original; c.id = UUID(); c.notes = c.notes.map { n in var n = n; n.id = UUID(); return n }; return c
+    }
+    private static func clampFades(_ clip: inout Clip) {
+        let fadeIn = min(max(0, clip.fadeInBeats ?? 0), max(0, clip.lengthBeats))
+        let fadeOut = min(max(0, clip.fadeOutBeats ?? 0), max(0, clip.lengthBeats - fadeIn))
+        clip.fadeInBeats = fadeIn > 0 ? fadeIn : nil
+        clip.fadeOutBeats = fadeOut > 0 ? fadeOut : nil
     }
 }

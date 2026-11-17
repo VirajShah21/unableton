@@ -30,6 +30,12 @@ final class ProjectSession: ObservableObject {
     @Published var arrangementReveal: ArrangementRevealRequest?
     @Published var selectedConversationID: UUID?
     @Published var composer = ""
+    @Published var composerAttachments: [UUID: [UUID]] = [:]
+    @Published var attachmentImporting = false
+    @Published var attachmentStatus: [UUID: String] = [:]
+    var attachmentImportTask: Task<Void, Never>?
+    var referenceProcessing: ReferenceProcessing?
+    var retainedReferenceIDs = Set<UUID>()
     @Published var isGenerating = false
     @Published var generationStatus = ""
     @Published var errorMessage: String?
@@ -75,6 +81,8 @@ final class ProjectSession: ObservableObject {
         self.modePreferences = modePreferences; self.mode = mode ?? WorkspaceMode.lastUsed(in: modePreferences)
         undoManager = document.editingUndoManager
         self.selectedConversationID = document.project.conversations.last?.id
+        composerAttachments = Dictionary(uniqueKeysWithValues: document.project.conversations.map { ($0.id, $0.draftAttachmentIDs ?? []) })
+        retainedReferenceIDs = Set((document.project.attachments ?? []).map(\.id) + document.project.song.assets.filter { $0.referenceDerivation != nil }.map(\.id))
         // A persisted pending observation cannot resume after its window closes.
         for index in document.project.generations.indices where document.project.generations[index].observation?.status == .pending {
             document.project.generations[index].observation?.status = .unavailable
@@ -83,13 +91,11 @@ final class ProjectSession: ObservableObject {
         cacheURL = FileManager.default.temporaryDirectory.appendingPathComponent("Unableton-\(UUID().uuidString)", isDirectory: true)
         do {
             try FileManager.default.createDirectory(at: cacheURL, withIntermediateDirectories: true)
-            for (id, data) in document.assets {
-                let name = file.song.assets.first { $0.id == id }?.fileName ?? "\(id).wav"
-                let url = cacheURL.appendingPathComponent("\(id)-\(URL(fileURLWithPath: name).lastPathComponent)")
-                try data.write(to: url, options: .atomic)
+            for (id, url) in document.blobURLs {
                 assetURLs[id] = url
-                if let source = try? AVAudioFile(forReading: url) { waveforms[id] = Self.waveform(file: source) }
+                if file.song.assets.contains(where: { $0.id == id }), let source = try? AVAudioFile(forReading: url) { waveforms[id] = Self.waveform(file: source) }
             }
+            if let failure = document.storageError { throw ProjectError(failure) }
         } catch { errorMessage = error.localizedDescription }
         audio.update(song: file.song, assets: assetURLs)
     }
@@ -97,7 +103,7 @@ final class ProjectSession: ObservableObject {
         guard !closed else { return }
         transcription.prepareForClose()
         if audio.isRecording { finishRecording() }
-        closed = true; generationTask?.cancel(); audioPreparation?.cancel(); exportTask?.cancel(); audio.stop(); previewPlayer?.stop()
+        closed = true; generationTask?.cancel(); attachmentImportTask?.cancel(); audioPreparation?.cancel(); exportTask?.cancel(); audio.stop(); previewPlayer?.stop()
         PlaybackFocus.release(self)
         for (id, task) in draftReviewTasks {
             task.cancel()
@@ -132,9 +138,10 @@ final class ProjectSession: ObservableObject {
             commit(after, replacing: before, name: name)
         } catch { errorMessage = error.localizedDescription }
     }
-    func commit(_ song: Song, replacing previous: Song, name: String, generationID: UUID? = nil) {
+    func commit(_ song: Song, replacing previous: Song, name: String, generationID: UUID? = nil, project metadata: ProjectFile? = nil) {
         var updated = song; updated.revision = file.song.revision + 1
-        file.song = updated
+        var project = metadata ?? file; project.song = updated
+        file = project
         undoManager?.registerUndo(withTarget: self) { target in
             target.restore(previous, name: name, generationID: generationID, undone: generationID != nil)
         }

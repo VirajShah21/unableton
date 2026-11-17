@@ -30,6 +30,7 @@ Instrument parts stay editable. Recordings and generated singing stay audio. Eac
 | | In Unableton |
 | --- | --- |
 | **Compose through chat** | Generate and refine separate musical parts, sound settings, and arrangements. Start a fresh chat on the same song whenever you need one. |
+| **Attach reference songs** | Attach MP3, M4A, WAV, or AIFF files. Separate vocals/instruments and extract editable notes locally, then use chat to recreate, restyle, or arrange transitions. |
 | **Edit the details** | Move, split, trim, and duplicate clips. Edit notes and velocities in the piano roll. Adjust synth parameters, mixing, and effects. |
 | **Transcribe a performance** | Whistle, hum, sing a melody, or beatbox. Review detected notes, choose instruments and layers, then add them to the song. |
 | **Record and sing** | Record or import audio. Generate singing from a melody and aligned lyrics through an optional vocal provider. |
@@ -110,6 +111,16 @@ A completed draft commits once. Cancellation, invalid output, and provider failu
 
 Local musical analysis records factual changes after an edit. Optional **Jev review** observes bounded symbolic reports; it does not listen to audio, reject edits, or repair the song. [Draft analysis and review](docs/draft-review.md).
 
+## Song attachments
+
+Click the paperclip in chat or drop audio files onto the chat. Attach up to four songs per message, each no longer than ten minutes and 100 MiB. Numbered references remain available in that conversation after saving and reopening. Attaching a file does not add it to the arrangement.
+
+Local stem separation and note extraction require an **Apple silicon Mac**; the pinned processing runtime does not support Intel Macs. Use **Settings → Song Attachments → Set Up Local Processing** to explicitly download the managed runtime and models once. Setup requires [uv](https://docs.astral.sh/uv/getting-started/installation/). Demucs separates audio and Basic Pitch extracts notes on your Mac, with no Mureka key or per-song processing API charge. OpenAI remains responsible for chat and composition. Optional **Allow OpenAI audio inspection**, off by default, permits targeted `gpt-audio-1.5` excerpt requests using the existing key and OpenAI billing. Original vocals are retained by default when recreating or restyling a vocal song.
+
+Close instrumental recreation uses a versioned local reconstruction profile: quiet-leakage filtering, monophonic bass, independent pitch envelopes, estimated drum attacks, and source-informed sound and level controls. Aligned vocal and bass evidence helps reject leaked voice notes and copied bass harmonics without removing independently supported instruments. Distinct measured phrases and sustained textures can use separate instruments, with kick, snare and hats fitted independently. Production renders compare compatible installed sounds across several passages, including attacks, holds and releases with source-aligned preroll. Matching accounts for neighboring parts and measures each part's level independently. The agent explicitly replaces competing layers, and the host checks the rendered candidate for clipping and silence. Raw MIDI remains a separate import path. Converting vocals into instrumental notes requires an explicit request in the current prompt; ordinary recreation and vocal-audio remix requests do not enable it.
+
+Results are best effort. Instrument matches, extracted notes and musical landmarks can be wrong; feature comparisons do not establish audible similarity. Unclear drops need a timestamp, and tempo alignment supports constant-tempo sources. Successful edits apply as one undoable change. [Setup, processing, and limits](docs/song-attachments.md).
+
 ## Development
 
 ```sh
@@ -118,7 +129,7 @@ swift test
 ./script/build_and_run.sh --verify
 ```
 
-The test suite uses isolated transports and deterministic audio fixtures; it needs no provider keys. The run script also supports `--build-only`, `--debug`, `--logs`, and `--telemetry`. Python 3 is needed only for optional catalog-audit scripts.
+The test suite uses isolated transports and deterministic audio fixtures; it needs no provider keys. The run script also supports `--build-only`, `--debug`, `--logs`, and `--telemetry`. Optional song processing installs its own managed Python runtime; it does not depend on your shell's Python environment. Python 3 is also used by optional catalog-audit scripts.
 
 | Target | Responsibility |
 | --- | --- |
@@ -154,7 +165,7 @@ The default app is ad-hoc signed for development. Creating a DMG does not make i
 
 Unableton is a **development preview**. Source is available under Apache 2.0; signed distribution, notarization, full VoiceOver acceptance, and macOS 27 validation remain release work.
 
-One project plays or records at a time. Imported and generated audio retains its original speed and pitch after tempo or note edits. Polyphonic transcription, lyric transcription, third-party plugin hosting, external MIDI recording, advanced time stretching, and comping are outside this version.
+One project plays or records at a time. Imported and generated audio retains its original speed and pitch after tempo or note edits; attached-song audio can be explicitly prepared at a different constant tempo. Local reference-song MIDI extraction is approximate and works best on isolated melodic instruments. Complete instrument-by-instrument reconstruction, lyric transcription, third-party plugin hosting, external MIDI recording, variable-tempo warping, and comping are outside this version. Real-song reconstruction quality needs broader acceptance testing.
 
 ## License
 

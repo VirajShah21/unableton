@@ -24,6 +24,7 @@ mkdir -p "$STAGED_APP/Contents/MacOS" "$STAGED_APP/Contents/Resources"
 # Stage a fresh bundle so old resources and sample content cannot leak into it.
 /usr/bin/ditto "$BUILD_DIR/Unableton" "$STAGED_APP/Contents/MacOS/Unableton"
 /usr/bin/ditto "$ROOT_DIR/Resources/Info.plist" "$STAGED_APP/Contents/Info.plist"
+/usr/bin/ditto "$ROOT_DIR/Resources/LocalProcessing" "$STAGED_APP/Contents/Resources/LocalProcessing"
 /usr/bin/ditto "$BUILD_DIR/Unableton_UnabletonCore.bundle" "$STAGED_APP/Contents/Resources/Unableton_UnabletonCore.bundle"
 /usr/bin/ditto "$ROOT_DIR/THIRD_PARTY_NOTICES.md" "$STAGED_APP/Contents/Resources/THIRD_PARTY_NOTICES.md"
 /usr/bin/ditto "$ROOT_DIR/LICENSE" "$STAGED_APP/Contents/Resources/LICENSE"

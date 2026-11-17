@@ -1,0 +1,18 @@
+{
+  "profile": "demucs-4.0.1-htdemucs_basic-pitch-0.4.0-coreml-v1",
+  "python": "3.10.19",
+  "demucs": {
+    "version": "4.0.1",
+    "name": "htdemucs",
+    "signature": "955717e8",
+    "file": "955717e8-8726e21a.th",
+    "url": "https://dl.fbaipublicfiles.com/demucs/hybrid_transformer/955717e8-8726e21a.th",
+    "bytes": 84141911,
+    "sha256": "8726e21a993978c7ba086d3872e7608d7d5bfca646ca4aca459ffda844faa8b4"
+  },
+  "basic_pitch": {
+    "version": "0.4.0",
+    "model": "icassp_2022/nmp.mlpackage",
+    "tree_sha256": "4b0c371ebc032c02caa4103c26578c6544ca8e7b2b98c5b2ed09a8b5b85e5f48"
+  }
+}

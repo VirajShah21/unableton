@@ -19,7 +19,7 @@ double oscillator(double phase, double step, int waveform) {
     return 2 * std::abs(2*phase - 1) - 1;
 }
 struct SampleData { std::vector<float> left, right; double rate; };
-struct AudioClip { std::shared_ptr<SampleData> sample; int64_t start, end; double offset; };
+struct AudioClip { std::shared_ptr<SampleData> sample; int64_t start, end; double offset; int64_t fadeIn, fadeOut, envelopeEnd; };
 struct Voice {
     bool active=false, released=false;
     uint64_t note=0;
@@ -136,8 +136,11 @@ void ub_track_render(UBTrack *t,double sampleTime,uint32_t frames,float *left,fl
             if (at>=0 && at<static_cast<int64_t>(clip.sample->left.size())) {
                 const double f=source-at;
                 const auto next=std::min(at+1,static_cast<int64_t>(clip.sample->left.size())-1);
-                l+=clip.sample->left[at]*(1-f)+clip.sample->left[next]*f;
-                r+=clip.sample->right[at]*(1-f)+clip.sample->right[next]*f;
+                double gain=1;
+                if (clip.fadeIn>0 && frame-clip.start<clip.fadeIn) gain*=std::sin(pi*.5*double(frame-clip.start)/double(clip.fadeIn));
+                if (clip.fadeOut>0 && clip.envelopeEnd-1-frame<clip.fadeOut) gain*=std::sin(pi*.5*double(clip.envelopeEnd-1-frame)/double(clip.fadeOut));
+                l+=(clip.sample->left[at]*(1-f)+clip.sample->left[next]*f)*gain;
+                r+=(clip.sample->right[at]*(1-f)+clip.sample->right[next]*f)*gain;
             }
         }
         left[i]=float(l);right[i]=float(r);t->previous=frame;
@@ -149,6 +152,12 @@ UBSample *ub_sample_create(const float *left,const float *right,uint64_t frames,
 }
 void ub_sample_destroy(UBSample *s) {delete s;}
 void ub_track_add_audio(UBTrack *t,UBSample *s,int64_t start,int64_t end,double offset) {
-    t->clips.push_back({s->data,start,end,offset*s->data->rate});
+    ub_track_add_audio_faded(t,s,start,end,offset,0,0);
+}
+void ub_track_add_audio_faded(UBTrack *t,UBSample *s,int64_t start,int64_t end,double offset,int64_t fadeIn,int64_t fadeOut) {
+    ub_track_add_audio_envelope(t,s,start,end,offset,fadeIn,fadeOut,end);
+}
+void ub_track_add_audio_envelope(UBTrack *t,UBSample *s,int64_t start,int64_t end,double offset,int64_t fadeIn,int64_t fadeOut,int64_t envelopeEnd) {
+    t->clips.push_back({s->data,start,end,offset*s->data->rate,std::max<int64_t>(0,fadeIn),std::max<int64_t>(0,fadeOut),std::max(end,envelopeEnd)});
 }
 }

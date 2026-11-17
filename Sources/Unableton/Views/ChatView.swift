@@ -28,6 +28,10 @@ struct ChatView: View {
             .onChange(of: session.currentConversation?.messages.count) { _, _ in reader.scrollTo("bottom", anchor: .bottom) }
             .onChange(of: session.selectedConversationID) { _, _ in reader.scrollTo("bottom", anchor: .bottom) }
         }
+        .dropDestination(for: URL.self) { urls, _ in
+            guard !session.closed, !session.attachmentImporting else { return false }
+            session.attachSongs(urls); return true
+        }
         .accessibilityElement(children: .contain).accessibilityLabel("AI chat")
     }
     private var header: some View {
@@ -66,6 +70,9 @@ struct ChatView: View {
         VStack(alignment: .leading, spacing: 6) {
             Text(message.role == "user" ? "You" : "Unableton").font(.caption).fontWeight(.semibold).foregroundStyle(.secondary)
             Text(displayText(message)).font(.callout).textSelection(.enabled).frame(maxWidth: .infinity, alignment: .leading)
+            ForEach(message.attachmentIDs ?? [], id: \.self) { id in
+                if let attachment = session.attachment(id) { ChatAttachmentView(session: session, attachment: attachment) }
+            }
             if let id = message.runID, let record = session.file.generations.first(where: { $0.id == id }) {
                 HStack(spacing: 7) {
                     Label(record.appliedRevision == nil ? "Answered" : record.isUndone ? "Undone" : "Applied", systemImage: record.appliedRevision == nil ? "text.bubble" : record.isUndone ? "arrow.uturn.backward" : "checkmark.circle")
@@ -86,6 +93,16 @@ struct ChatView: View {
     }
     private var composer: some View {
         VStack(alignment: .leading, spacing: 8) {
+            if !session.pendingAttachmentIDs.isEmpty {
+                ScrollView {
+                    VStack(spacing: 5) {
+                        ForEach(session.pendingAttachmentIDs, id: \.self) { id in
+                            if let attachment = session.attachment(id) { ChatAttachmentView(session: session, attachment: attachment, pending: true) }
+                        }
+                    }
+                }.frame(height: min(145, CGFloat(session.pendingAttachmentIDs.count) * 64))
+            }
+            if session.attachmentImporting { HStack { ProgressView().controlSize(.mini); Text("Attaching songs…").font(.caption) } }
             HStack(spacing: 5) {
                 Image(systemName: session.selectedTrack == nil ? "music.note.list" : "scope")
                 Text(contextLabel).lineLimit(1)
@@ -97,6 +114,9 @@ struct ChatView: View {
                 .padding(6).background(.quaternary.opacity(0.45), in: RoundedRectangle(cornerRadius: 8))
                 .accessibilityLabel("Music prompt")
             HStack {
+                Button { session.chooseSongAttachments() } label: { Image(systemName: "paperclip") }
+                    .help("Attach Song…").accessibilityLabel("Attach Song")
+                    .disabled(session.attachmentImporting || session.pendingAttachmentIDs.count >= 4)
                 if session.previewURL != nil { Button { session.playPreview() } label: { Image(systemName: "play.circle") }.help("Play latest preview").accessibilityLabel("Play latest preview") }
                 if session.isGenerating {
                     Button("Cancel") { session.cancelGeneration() }
@@ -108,7 +128,7 @@ struct ChatView: View {
                 Button { session.submitPrompt() } label: { Label(session.isGenerating ? "Queue" : "Send", systemImage: "arrow.up") }
                     .buttonStyle(.borderedProminent).controlSize(.small)
                     .keyboardShortcut(.return, modifiers: [.command])
-                    .disabled(session.composer.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                    .disabled(session.attachmentImporting || session.composer.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
             }
         }.padding(12)
     }

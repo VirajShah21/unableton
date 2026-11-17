@@ -47,13 +47,15 @@ The app contains no sampled banks and performs no startup downloads. Bass, Lead,
 
 Missing sounds do not prevent opening, inspecting, saving, editing notes, Undo/Redo or MIDI export. Playback, WAV export and previews list required downloads rather than substituting instruments. Silent/Solo Transcribe capture and original takes work without sampled sounds. Ordinary recording offers recording without accompaniment when song sounds are missing.
 
-The first AI-required download asks to enable automatic sound downloads. Change this in Settings → Sound Library. Generation pauses its five-minute active-work clock only during consent and installation, with at most 30 minutes of total dependency waiting; all request, token and retry limits remain shared across upgrades and replans. Canceled or failed music generation keeps completed library downloads but leaves the song intact.
+The first AI-required download asks to enable automatic sound downloads. Change this in Settings → Sound Library. Sound consent/installation and optional reference-song processing share at most 30 minutes of dependency waiting outside the five-minute active-work clock; all request, token and retry limits remain shared across upgrades and replans. Canceled or failed music generation keeps completed library downloads but leaves the song intact.
 
 **Import Existing Sounds…** accepts only exact SF2 versions in the catalog, verifies their hashes, and leaves originals untouched. Existing development caches and old app banks are never loaded implicitly. Remove Download frees a bank when no playback, rendering or generation holds it; songs may then need another download.
 
 Some FreePats SF2 banks fail native sampler checks and are excluded; exact evidence is in [the catalog audit](sound-library-audit.json). The original acoustic drum identity is retained for old songs, but some mapped notes render silently in Apple's sampler. Those notes remain saved and exportable as MIDI; playback reports the limitation instead of silently omitting them. Use Electronic drums for a complete GM-style kit.
 
 ## AI setup
+
+For full-song references, see [Song attachments](song-attachments.md). Chat accepts numbered song files without inserting them into the arrangement. On Apple silicon Macs, one-time local setup enables Demucs stems and Basic Pitch MIDI extraction; audio transitions are prepared on your Mac. The pinned separation/transcription runtime does not support Intel Macs.
 
 Open Unableton → Settings, enter an OpenAI API key, and click Save Key. Credentials use a local file by default in every build. Settings → Credentials → Use macOS Keychain for Credentials is off by default; enable it to save and load keys through Keychain instead. Test Connection verifies the selected model's Responses function-call support.
 
@@ -67,7 +69,7 @@ The model dropdown includes:
 
 Automatic upgrades can cost substantially more than the economical attempt. Select a fixed model to keep every request on that model. Model availability and prices are controlled by OpenAI; see the [model catalog](https://developers.openai.com/api/docs/models) and [pricing](https://developers.openai.com/api/docs/pricing).
 
-Generation uses the Responses API with strict project tools. Prompts, musical notes, instrument settings, and relevant conversation context go to OpenAI. Audio stays on the Mac unless a vocal provider is enabled; local previews report numerical measurements. This version does not send recordings to an audio-understanding model.
+Generation uses the Responses API with strict project tools. Prompts, musical notes, instrument settings, attachment metadata, and relevant conversation context go to OpenAI. Demucs separation and Basic Pitch transcription run locally without a separate provider key or API bill. Audio stays on the Mac unless **Allow OpenAI audio inspection** or a vocal provider is enabled. The separate audio-inspection preference starts off; when enabled, targeted excerpts can go to gpt-audio-1.5 using your OpenAI key and billing. Local rendered previews still report numerical measurements. Ordinary offline performance Transcribe does not upload recordings.
 
 Each prompt shares one five-minute deadline, at most 32 model requests, 65,536 output tokens, and two transient retries across composition steps, model upgrades and the single allowed revision replan. Usage includes discarded attempts. After an automatic upgrade, a revision replan keeps the stronger model. Optional Transcribe arrangement uses the same limits; faithful transcription stays offline.
 
@@ -171,7 +173,7 @@ The project format currently uses version 1. Metadata is JSON; audio files live 
 - One project plays or records at a time.
 - Audio files are decoded into memory, with a limit of 64 million frames per file.
 - Structural changes rebuild playback at the current musical position. This version does not promise seamless live graph changes.
-- Local transcription handles one melodic voice or a beatbox performance. General cloud audio understanding, polyphonic transcription, lyric transcription, third-party plugin hosting, external MIDI recording, advanced time stretching, comping, and sampled orchestral strings are not included.
+- Performance Transcribe handles one melodic voice or a beatbox performance. Song attachments add local Demucs separation, approximate Basic Pitch MIDI extraction, and constant-tempo audio preparation. Basic Pitch works best on isolated melodic parts; full instrument-by-instrument reconstruction is not promised. Lyric transcription, third-party plugin hosting, external MIDI recording, variable-tempo warping, comping, and sampled orchestral strings are not included.
 - Source publication does not provide a signed distribution release. Developer signing, notarization, and release packaging are separate work.
 
 ## License

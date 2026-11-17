@@ -80,11 +80,12 @@ struct SettingsView: View {
                     Spacer()
                     Button("Remove Key", role: .destructive) { removeKey() }.disabled(credentialBusy)
                 }
-                Text("Credential storage: \(storage.title). Prompts and the song’s notes and instrument settings are sent to OpenAI. Audio stays on your Mac unless you enable a vocal provider below.")
+                Text("Credential storage: \(storage.title). Prompts and the song’s notes and instrument settings are sent to OpenAI. Audio stays on your Mac unless you enable optional OpenAI audio inspection or use a vocal provider below.")
                     .font(.caption).foregroundStyle(.secondary)
                 Link("OpenAI API settings", destination: URL(string: "https://platform.openai.com/api-keys")!)
             }
             DraftReviewSettingsView()
+            ReferenceSettingsView()
             VocalSettingsView()
             Section("Sound Library") {
                 Toggle("Allow automatic sound downloads for AI", isOn: $automaticDownloads)
